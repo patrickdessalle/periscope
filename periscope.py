@@ -68,9 +68,8 @@ class Periscope:
 		return subtitles
 	
 	
-	def selectBestSubtitle(self, filename, langs=None):
+	def selectBestSubtitle(self, subtitles, langs=None):
 		'''Searches subtitles from plugins and select the best subtitles '''
-		subtitles = self.listSubtitles(filename, langs)
 		if not subtitles:
 			return None
 
@@ -86,7 +85,8 @@ class Periscope:
 
 	def downloadSubtitle(self, filename, langs=None):
 		''' Takes a filename and a language and creates ONE subtitle through plugins'''
-		subtitle = self.selectBestSubtitle(filename, langs)
+		subtitles = self.listSubtitles(filename, langs)
+		subtitle = self.selectBestSubtitle(subtitles, langs)
 		if subtitle:
 			#Download the subtitle
 			subpath = subtitle["plugin"].createFile(subtitle["link"], filename)
@@ -105,6 +105,7 @@ class Periscope:
 		except ImportError, e: #Don't use Python 2.5
 			subtitles = {}
 			for s in subs:
+				# return subtitles[s["lang"]], if it does not exist, set it to [] and return it, then append the subtitle
 				subtitles.setdefault(s["lang"], []).append(s)
 			return subtitles
 
