@@ -24,17 +24,21 @@ import SubtitleDatabase
 class SubtitleSource(SubtitleDatabase.SubtitleDB):
 
 	def __init__(self):
-		self.langs = {"English": "en", "Swedish": "se", "Danish": "da", "Finnish": "fi", "Norwegian": "no"}
+		super(SubtitleSource, self).__init__({"en": "English", "se": "Swedish", "da": "Danish", "fi":"Finnish", "no": "Norwegian"})
 
 		self.host = "http://www.subtitlesource.org/"
 		self.search = "sublinks.php?"
 	
-	def process(self, filename, lang):
+	def process(self, filename, langs):
+		''' main method to call on the plugin, pass the filename and the wished 
+		languages and it will query SubtitlesSource.org '''
 		if os.path.isfile(filename):
 			filename = os.path.basename(filename).rsplit(".", 1)[0]
-		return self.query(filename, lang)
+		return self.query(filename, langs)
 		
 	def createFile(self, suburl, videofilename):
+		'''pass the URL of the sub and the file it matches, will unzip it
+		and return the path to the created file'''
 		srtbasefilename = videofilename.rsplit(".", 1)[0]
 		zipfilename = srtbasefilename +".zip"
 		self.downloadFile(suburl, zipfilename)
@@ -53,6 +57,7 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 			return srtbasefilename + ".srt"
 	
 	def query(self, token, langs=None):
+		''' makes a query on subtitlessource and returns info (link, lang) about found subtitles'''
 		sublinks = []
 		params = {"q": token}
 		searchurl = self.host + self.search + urllib.urlencode(params)
@@ -61,16 +66,13 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 		soup = BeautifulSoup(page)
 		for subs in soup('a'):
 			sublang = subs("img")[0]["src"].rsplit("/", 1)[1][:-4] #Strip the .gif
-			if not self.langs.has_key(sublang):
-				print "Ooops, you found a missing language in the config file of SubtitleSource.py: %s. Send a bug report to have it added." %sublang
-				continue
-			if langs and not self.langs[sublang] in langs:
+			if langs and not self.getLG(sublang) in langs:
 				continue # The lang of this sub is not wanted => Skip
 			else:
 				dllink = subs["href"]
-				print "Link added: %s (%s)" %(dllink,sublang)
+				print "Link added: %s (%s)" %(dllink,self.getLG(sublang))
 				result = {}
 				result["link"] = dllink
-				result["lang"] = self.langs[sublang]
+				result["lang"] = self.getLG(sublang)
 				sublinks.append(result)
 		return sublinks

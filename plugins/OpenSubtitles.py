@@ -23,8 +23,8 @@ import SubtitleDatabase
 class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 
 	def __init__(self):
+		super(OpenSubtitles, self).__init__({"en": "eng", "fr" : "fre", "hu": "hun", "cs": "cze"})
 		self.server_url = 'http://www.opensubtitles.org/xml-rpc'
-		self.langs = {"en": "eng", "fr" : "fre", "hu": "hun", "cs": "cze"}
 		self.revertlangs = dict(map(lambda item: (item[1],item[0]), self.langs.items()))
 
 	def process(self, filename, langs):
@@ -93,7 +93,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 		if moviehash: search['moviehash'] = moviehash
 		if imdbID: search['imdbid'] = imdbID
 		if bytesize: search['moviebytesize'] = str(bytesize)
-		if langs: search['sublanguageid'] = ",".join([self.langs[lang] for lang in langs])
+		if langs: search['sublanguageid'] = ",".join([self.getLanguage(lang) for lang in langs])
 		if search:
 			results = server.SearchSubtitles(token, [search])
 		else:
@@ -104,9 +104,6 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 			for r in results['data']:
 				result = {}
 				result["link"] = r['SubDownloadLink']
-				try:
-					result["lang"] = self.revertlangs[r['SubLanguageID']]
-				except KeyError, e:
-					print "Ooops, you found a missing language in the config file of OpenSubtitles.py: %s. Send a bug report to have it added." %r['SubLanguageID']
+				result["lang"] = self.getLG(r['SubLanguageID'])
 				sublinks.append(result)
 		return sublinks
