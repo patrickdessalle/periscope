@@ -35,7 +35,7 @@ class SubtitleDB(object):
 	def getLG(self, language):
 		''' Returns the short (two-character) representation of the long language name'''
 		try:
-			return self.revertlangs(language)
+			return self.revertlangs[language]
 		except KeyError, e:
 			print "Ooops, you found a missing language in the config file of %s: %s. Send a bug report to have it added." %(self.__class__.__name__, language)
 		
