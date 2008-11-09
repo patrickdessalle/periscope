@@ -23,7 +23,7 @@ import SubtitleDatabase
 class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 
 	def __init__(self):
-		super(OpenSubtitles, self).__init__({"en": "eng", "fr" : "fre", "hu": "hun", "cs": "cze"})
+		super(OpenSubtitles, self).__init__({"en": "eng", "fr" : "fre", "hu": "hun", "cs": "cze", "pl" : "pol", "sk" : "slo", "pt" : "por", "pt-br" : "pob", "es" : "spa", "el" : "ell"})
 		self.server_url = 'http://www.opensubtitles.org/xml-rpc'
 		self.revertlangs = dict(map(lambda item: (item[1],item[0]), self.langs.items()))
 

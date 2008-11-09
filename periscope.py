@@ -20,7 +20,7 @@
 import getopt
 import sys
 import os
-from optparse import OptionParser
+import traceback
 
 import plugins
 
@@ -61,6 +61,7 @@ class Periscope:
 				subtitles += subs
 			except Exception, e:
 				print "Error raised by plugin %s: %s" %(name, e)
+				traceback.print_exc()
 			print "Total: %s subtitles so far" %len(subtitles)
 			
 		if len(subtitles) == 0:
@@ -121,20 +122,4 @@ class Subtitle:
 		self.downloadmethod(self.link, self.filename)
 		
 
-def main():
-	'''Download subtitles'''
-	# parse command line options
-	parser = OptionParser("usage: %prog [options] file1 file2")
-	parser.add_option("-l", "--language", action="append", dest="langs", help="wanted language (ISO 639-1 two chars) for the subtitles (fr, en, ja, ...)")
-	parser.add_option("-q", "--query", action="append", dest="queries", help="query to send to the subtitles website")
-	(options, args) = parser.parse_args()
 
-	# process args
-	if options.queries: args += options.queries
-	for arg in args:
-		periscope = Periscope()
-		sub = periscope.downloadSubtitle(arg, options.langs)
-
-	
-if __name__ == "__main__":
-	main()

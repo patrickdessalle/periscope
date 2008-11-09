@@ -1,0 +1,42 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+#   This file is part of periscope.
+#
+#    periscope is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    periscope is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with emesene; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+from optparse import OptionParser
+import periscope
+
+def main():
+	'''Download subtitles'''
+	# parse command line options
+	parser = OptionParser("usage: %prog [options] file1 file2")
+	parser.add_option("-l", "--language", action="append", dest="langs", help="wanted language (ISO 639-1 two chars) for the subtitles (fr, en, ja, ...). If none is specified will download a subtitle in any language.")
+	parser.add_option("-q", "--query", action="append", dest="queries", help="query to send to the subtitles website")
+	(options, args) = parser.parse_args()
+
+	if not args:
+		print parser.print_help()
+
+	# process args
+	if options.queries: args += options.queries
+	for arg in args:
+		periscope_client = periscope.Periscope()
+		sub = periscope_client.downloadSubtitle(arg, options.langs)
+
+	
+if __name__ == "__main__":
+	main()
