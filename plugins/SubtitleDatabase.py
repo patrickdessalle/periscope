@@ -26,11 +26,14 @@ class SubtitleDB(object):
 		
 	def downloadFile(self, url, filename):
 		''' Quick download (to be replace by curl or something else) '''
+
+		print "Downloading %s" %url
 		f = urllib2.urlopen(url)
 		dump = open(filename, "wb")
 		dump.write(f.read())
 		dump.close()
 		f.close()
+		print "Download finished to file %s"%filename
 		
 	def getLG(self, language):
 		''' Returns the short (two-character) representation of the long language name'''

@@ -24,7 +24,7 @@ import SubtitleDatabase
 class SubtitleSource(SubtitleDatabase.SubtitleDB):
 
 	def __init__(self):
-		super(SubtitleSource, self).__init__({"en": "English", "se": "Swedish", "da": "Danish", "fi":"Finnish", "no": "Norwegian"})
+		super(SubtitleSource, self).__init__({"en": "English", "se": "Swedish", "da": "Danish", "fi":"Finnish", "no": "Norwegian", "fr" : "French", "es" : "Spanish"})
 
 		self.host = "http://www.subtitlesource.org/"
 		self.search = "sublinks.php?"

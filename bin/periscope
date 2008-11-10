@@ -35,7 +35,7 @@ def main():
 	if options.queries: args += options.queries
 	for arg in args:
 		periscope_client = periscope.Periscope()
-		sub = periscope_client.downloadSubtitle(arg, options.langs)
+		sub = periscope_client.downloadSubtitle(arg, options.langs.split(","))
 
 	
 if __name__ == "__main__":
