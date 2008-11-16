@@ -42,7 +42,7 @@ class Periscope:
 		return self.pluginNames
 		
 	def listExistingPlugins(self):
-		return [e for e in dir(plugins) if not e.startswith("__") and e != "SubtitleDatabase"]
+		return plugins.SubtitleDatabase.SubtitleDB.__subclasses__()
 	
 	def listSubtitles(self, filename, langs=None):
 		'''Searches subtitles within the plugins and returns all found matching subtitles ordered by language then by plugin.'''
@@ -52,8 +52,8 @@ class Periscope:
 		print "Searching subtitles for %s" %filename
 		subtitles = []
 		for name in self.pluginNames:
-			print "Searching On %s " %name,
-			plugin = getattr(plugins, name)()
+			plugin = name()
+			print "Searching On %s " %plugin.__class__.__name__,
 			try:
 				subs = plugin.process(filename, langs)
 				map(lambda item: item.setdefault("plugin", plugin), subs)

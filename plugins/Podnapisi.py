@@ -24,7 +24,7 @@ import SubtitleDatabase
 class Podnapisi(SubtitleDatabase.SubtitleDB):
 
 	def __init__(self):
-		super(Podnapisi, self).__init__({"en": "2"})
+		super(Podnapisi, self).__init__({"sk" : "1", "en": "2", "no" : "3", "ko" :"4", "de" : "5", "cs" : "7", "fr" : "8", "it" : "9", "bs" : "10", "ja" : "11", "ar" : "12", "ro" : "13", "es-ar" : "14", "hu" : "15", "el" : "16", "zh" : "17", "he" : "22", "nl" : "23", "da" : "24", "se" : "25", "pl" : "26", "ru" : "27", "es" : "28", "tr" : "30", "fi" : "31", "pt": "32", "bg" : "33", "mk" : "35", "sh" : "36", "hr" : "38", "th" : "44", "pt-br" : "48"})
 
 		self.host = "http://www.podnapisi.net/"
 		self.search = "ppodnapisi/search?"
@@ -61,8 +61,10 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 		''' makes a query on podnapisi and returns info (link, lang) about found subtitles'''
 		sublinks = []
 		params = {"sR" : token}
-		if len(langs) == 1:
+		if langs and len(langs) == 1:
 			params["sJ"] = self.getLanguage(langs[0])
+		else:
+			params["sJ"] = 0
 
 		searchurl = self.host + self.search + urllib.urlencode(params)
 		print "dl'ing %s" %searchurl
