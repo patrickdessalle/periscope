@@ -17,8 +17,12 @@
 #    along with emesene; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+import os
+import mimetypes
 from optparse import OptionParser
 import periscope
+
+SUPPORTED_FORMATS = 'video/x-msvideo', 'video/quicktime'
 
 def main():
 	'''Download subtitles'''
@@ -33,11 +37,27 @@ def main():
 
 	# process args
 	if options.queries: args += options.queries
+	videos = []
 	for arg in args:
+		videos += recursive_search(arg)
+
+	for arg in videos:
 		periscope_client = periscope.Periscope()
-		print options.langs
 		sub = periscope_client.downloadSubtitle(arg, options.langs)
 
+def recursive_search(entry):
+	'''searches files in the dir'''
+	files = []
+	if os.path.isdir(entry):
+		for e in os.listdir(entry):
+			files += recursive_search(os.path.join(entry, e))
+	elif os.path.isfile(entry):
+		mimetype = mimetypes.guess_type(entry)[0]
+		if mimetype in SUPPORTED_FORMATS:
+			files.append(os.path.normpath(entry))
+		else :
+			print "%s mimetype i '%s' which is not supported (%s)" %(entry, mimetype, SUPPORTED_FORMATS)
+	return files
 	
 if __name__ == "__main__":
 	main()
