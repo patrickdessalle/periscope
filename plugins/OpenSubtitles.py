@@ -27,15 +27,16 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 		self.server_url = 'http://www.opensubtitles.org/xml-rpc'
 		self.revertlangs = dict(map(lambda item: (item[1],item[0]), self.langs.items()))
 
-	def process(self, filename, langs):
+	def process(self, filepath, langs):
 		''' main method to call on the plugin, pass the filename and the wished 
 		languages and it will query OpenSubtitles.org '''
-		if os.path.isfile(filename):
-			filehash = self.hashFile(filename)
-			size = os.path.getsize(filename)
-			return self.query(moviehash=filehash, langs=langs, bytesize=size)
+		if os.path.isfile(filepath):
+			filehash = self.hashFile(filepath)
+			size = os.path.getsize(filepath)
+			filename = os.path.basename(filepath).rsplit(".", 1)[0]
+			return self.query(moviehash=filehash, langs=langs, bytesize=size, filename=filename)
 		else:
-			return self.query(token=filename, langs=langs)
+			return self.query(token=filename, langs=langs, filename=filename)
 		
 	def createFile(self, suburl, videofilename):
 		'''pass the URL of the sub and the file it matches, will unzip it
@@ -86,7 +87,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 		returnedhash =  "%016x" % hash 
 		return returnedhash 
 
-	def query(self, token='', moviehash=None, imdbID=None, bytesize=None, langs=None):
+	def query(self, filename, token='', moviehash=None, imdbID=None, bytesize=None, langs=None):
 		''' makes a query on opensubtitles and returns info about found subtitles'''
 		server = xmlrpclib.Server(self.server_url)
 		search = {}
@@ -94,6 +95,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 		if imdbID: search['imdbid'] = imdbID
 		if bytesize: search['moviebytesize'] = str(bytesize)
 		if langs: search['sublanguageid'] = ",".join([self.getLanguage(lang) for lang in langs])
+
 		if search:
 			results = server.SearchSubtitles(token, [search])
 		else:
@@ -101,9 +103,28 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 
 		sublinks = []
 		if results['data']:
-			for r in results['data']:
+			self.filename = filename
+			# OpenSubtitles hash function is not robust ... We'll use the MovieReleaseName to help us select the best candidate
+			for r in sorted(results['data'], self.sort_by_moviereleasename):
+				# Only added if the MovieReleaseName matches the file
+				print r
 				result = {}
 				result["link"] = r['SubDownloadLink']
 				result["lang"] = self.getLG(r['SubLanguageID'])
 				sublinks.append(result)
 		return sublinks
+
+	def sort_by_moviereleasename(self, x, y):
+		''' sorts based on the movierelease name tag'''
+		xmatch = x['MovieReleaseName'] and (x['MovieReleaseName'].find(self.filename)>-1 or self.filename.find(x['MovieReleaseName'])>-1)
+		ymatch = y['MovieReleaseName'] and (y['MovieReleaseName'].find(self.filename)>-1 or self.filename.find(y['MovieReleaseName'])>-1)
+		
+		if xmatch and ymatch:
+			return 0
+		if not xmatch and not ymatch:
+			return 0
+		if xmatch and not ymatch:
+			return -1
+		if not xmatch and ymatch:
+			return 1
+		return 0
