@@ -36,7 +36,6 @@ class Periscope (totem.Plugin):
 			self.totem.action_set_mrl_and_play(current_mrl, "file://"+urllib2.quote(subtitle["subtitlepath"]))
 			seconds = current_time/1000
 			self.totem.action_seek_time(seconds) #TODO, don't think it's Py3K compatible
-		self.totem.action_seek_time(600)
 
 	def make_sensitive(self, totem_object, filename, boolean):
 		'''set the periscope menu entry sensitive or not'''
