@@ -29,8 +29,7 @@ class Periscope (totem.Plugin):
 		current_mrl = self.totem.get_current_mrl()
 		local_url = urllib2.unquote(current_mrl[7:])
 		subdl = periscope.Periscope()
-		#subtitle = subdl.downloadSubtitle(local_url, ["en"])
-		subtitle = None
+		subtitle = subdl.downloadSubtitle(local_url, ["en"])
 		if subtitle: #Only do something if subtitle found
 			current_time = self.totem.get_current_time()
 			self.totem.action_set_mrl_and_play(current_mrl, "file://"+urllib2.quote(subtitle["subtitlepath"]))
