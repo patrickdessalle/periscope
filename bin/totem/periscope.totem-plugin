@@ -1,9 +1,0 @@
-[Totem Plugin]
-Loader=python
-Module=periscope-totem
-IAge=1
-Name=Periscope
-Description=Download subtitles from the web
-Authors=Patrick Dessalle
-Copyright=Copyright © 2008 Patrick Dessalle
-Website=http://code.google.com/p/periscope

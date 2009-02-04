@@ -97,8 +97,9 @@ class PeriscopeInvoker(threading.Thread):
 
 	def run(self):
 		subdl = periscope.Periscope()
+		print "prefered languages: %s" %subdl.preferedLanguages
 		for filename in self.filenames:
-			subtitle = subdl.downloadSubtitle(filename, ["en"])
+			subtitle = subdl.downloadSubtitle(filename, subdl.preferedLanguages)
 			if subtitle:
 				self.found.append(subtitle)
 			else:

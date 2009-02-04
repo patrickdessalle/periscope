@@ -43,6 +43,8 @@ def main():
 
 	for arg in videos:
 		periscope_client = periscope.Periscope()
+		if not options.langs: #Look into the config
+			langs = self.preferedLanguages
 		sub = periscope_client.downloadSubtitle(arg, options.langs)
 
 def recursive_search(entry):
