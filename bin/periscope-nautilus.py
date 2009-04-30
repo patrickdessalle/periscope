@@ -28,7 +28,7 @@ except ImportError:
 
 import periscope
 
-SUPPORTED_FORMATS = 'video/x-msvideo', 'video/quicktime', 'video/x-matroska'
+SUPPORTED_FORMATS = 'video/x-msvideo', 'video/quicktime', 'video/x-matroska', 'video/mp4'
 
 class DownloadSubtitles(nautilus.MenuProvider):
 	''' This class is to be used in Nautilus with the python-nautilus extension. 

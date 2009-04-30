@@ -20,6 +20,7 @@
 import os
 import mimetypes
 from optparse import OptionParser
+import logging
 import periscope
 
 SUPPORTED_FORMATS = 'video/x-msvideo', 'video/quicktime'
@@ -30,12 +31,22 @@ def main():
 	parser = OptionParser("usage: %prog [options] file1 file2")
 	parser.add_option("-l", "--language", action="append", dest="langs", help="wanted language (ISO 639-1 two chars) for the subtitles (fr, en, ja, ...). If none is specified will download a subtitle in any language. This option can be used multiple times like %prog -l fr -l en file1 will try to download in french and then in english if no french subtitles are found.")
 	parser.add_option("-q", "--query", action="append", dest="queries", help="query to send to the subtitles website")
+	parser.add_option("--debug", action="store_true", dest="debug", help="set the logging level to debug")
 	(options, args) = parser.parse_args()
 
 	if not args:
 		print parser.print_help()
+		exit()
 
 	# process args
+	if options.debug:
+		logging.basicConfig(level=logging.DEBUG)
+		print "setting logging level to debug"
+		logging.debug("Test")
+		logging.info("Test2")
+		logging.warn("Test3")
+		logging.error("Test4")
+			
 	if options.queries: args += options.queries
 	videos = []
 	for arg in args:
@@ -44,8 +55,11 @@ def main():
 	for arg in videos:
 		periscope_client = periscope.Periscope()
 		if not options.langs: #Look into the config
-			langs = self.preferedLanguages
-		sub = periscope_client.downloadSubtitle(arg, options.langs)
+			logging.info("No lang given, looking into config file")
+			langs = periscope_client.preferedLanguages
+		else:
+			langs = options.langs
+		sub = periscope_client.downloadSubtitle(arg, langs)
 
 def recursive_search(entry):
 	'''searches files in the dir'''
@@ -58,7 +72,7 @@ def recursive_search(entry):
 		if mimetype in SUPPORTED_FORMATS:
 			files.append(os.path.normpath(entry))
 		else :
-			print "%s mimetype i '%s' which is not supported (%s)" %(entry, mimetype, SUPPORTED_FORMATS)
+			logger.warn("%s mimetype i '%s' which is not supported (%s)" %(entry, mimetype, SUPPORTED_FORMATS))
 	return files
 	
 if __name__ == "__main__":

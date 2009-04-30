@@ -16,7 +16,7 @@
 #    along with emesene; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-import os, struct, xmlrpclib, commands, gzip
+import os, struct, xmlrpclib, commands, gzip, traceback, logging
 
 import SubtitleDatabase
 
@@ -96,10 +96,15 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 		if bytesize: search['moviebytesize'] = str(bytesize)
 		if langs: search['sublanguageid'] = ",".join([self.getLanguage(lang) for lang in langs])
 
-		if search:
-			results = server.SearchSubtitles(token, [search])
-		else:
-			results = server.SearchSubtitles(token)
+		try:
+			if search:
+				results = server.SearchSubtitles(token, [search])
+			else:
+				results = server.SearchSubtitles(token)
+		except Exception, e:
+			logging.error("Could not query the server OpenSubtitles")
+			logging.debug(traceback)
+			return []
 
 		sublinks = []
 		if results['data']:
@@ -107,7 +112,6 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 			# OpenSubtitles hash function is not robust ... We'll use the MovieReleaseName to help us select the best candidate
 			for r in sorted(results['data'], self.sort_by_moviereleasename):
 				# Only added if the MovieReleaseName matches the file
-				print r
 				result = {}
 				result["link"] = r['SubDownloadLink']
 				result["lang"] = self.getLG(r['SubLanguageID'])

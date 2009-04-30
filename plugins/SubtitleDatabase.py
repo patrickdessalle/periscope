@@ -16,24 +16,37 @@
 #    along with emesene; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-import os, shutil, urllib2, sys
+import os, shutil, urllib2, sys, logging
 
 class SubtitleDB(object):
 	''' Base (kind of abstract) class that represent a SubtitleDB, usually a website. Should be rewritten using abc module in Python 2.6/3K'''
 	def __init__(self, langs):
 		self.langs = langs
 		self.revertlangs = dict(map(lambda item: (item[1],item[0]), self.langs.items()))
+
+	def searchInThread(self, queue, filename, langs):
+		''' search subtitles with the given filename for the given languages'''
+		subs = self.process(filename, langs)
+		map(lambda item: item.setdefault("plugin", self), subs)
+		map(lambda item: item.setdefault("filename", filename), subs)
+		queue.put(subs, True)
+	
+	def process(self, filename, langs):
+		''' main method to call on the plugin, pass the filename and the wished 
+		languages and it will query the subtitles source '''
+		if os.path.isfile(filename):
+			filename = os.path.basename(filename).rsplit(".", 1)[0]
+		return self.query(filename, langs)
 		
 	def downloadFile(self, url, filename):
-		''' Quick download (to be replace by curl or something else) '''
-
-		print "Downloading %s" %url
+		''' Downloads the given url to the given filename '''
+		logging.info("Downloading %s" %url)
 		f = urllib2.urlopen(url)
 		dump = open(filename, "wb")
 		dump.write(f.read())
 		dump.close()
 		f.close()
-		print "Download finished to file %s"%filename
+		logging.debug("Download finished to file %s"%filename)
 		
 	def getLG(self, language):
 		''' Returns the short (two-character) representation of the long language name'''
@@ -48,9 +61,6 @@ class SubtitleDB(object):
 			return self.langs[lg]
 		except KeyError, e:
 			print "Ooops, you found a missing language in the config file of %s: %s. Send a bug report to have it added." %(self.__class__.__name__, lg)
-		
-	def process(self, filename, langs):
-		raise TypeError("%s has not implemented method '%s'" %(self.__class__.__name__, sys._getframe().f_code.co_name))
 	
 	def createFile(self, suburl, videofilename):
 		raise TypeError("%s has not implemented method '%s'" %(self.__class__.__name__, sys._getframe().f_code.co_name))

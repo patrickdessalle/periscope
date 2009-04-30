@@ -16,7 +16,7 @@
 #    along with emesene; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-import zipfile, os, urllib2, urllib, xml.dom.minidom
+import zipfile, os, urllib2, urllib, xml.dom.minidom, logging
 
 import SubtitleDatabase
 
@@ -30,13 +30,6 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 
 		self.host = "http://www.subtitlesource.org/"
 		self.search = "sublinks.php?"
-	
-	def process(self, filename, langs):
-		''' main method to call on the plugin, pass the filename and the wished 
-		languages and it will query SubtitlesSource.org '''
-		if os.path.isfile(filename):
-			filename = os.path.basename(filename).rsplit(".", 1)[0]
-		return self.query(filename, langs)
 		
 	def createFile(self, suburl, videofilename):
 		'''pass the URL of the sub and the file it matches, will unzip it
@@ -62,7 +55,7 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 		''' makes a query on subtitlessource and returns info (link, lang) about found subtitles'''
 		sublinks = []
 		searchurl = "%sapi/xmlsearch/%s/all/0" %(self.host, urllib.quote(token))
-		print "dl'ing %s" %searchurl
+		logging.debug("dl'ing %s" %searchurl)
 		page = urllib2.urlopen(searchurl)
 		xmltree = xml.dom.minidom.parse(page)
 		subs = xmltree.getElementsByTagName("sub")
@@ -72,34 +65,14 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 			if langs and not sublang in langs:
 				continue # The language of this sub is not wanted => Skip
 			dllink = "http://www.subtitlesource.org/download/zip/%s" %self.getValue(sub, "id")
-			print "Link added: %s (%s)" %(dllink,sublang)
+			logging.debug("Link added: %s (%s)" %(dllink,sublang))
 			result = {}
 			result["link"] = dllink
 			result["lang"] = sublang
 			sublinks.append(result)
-		print sublinks
-		'''
-		for subs in soup('a'):
-			sublang = subs("img")[0]["src"].rsplit("/", 1)[1][:-4] #Strip the .gif
-			if langs and not self.getLG(sublang) in langs:
-				continue # The lang of this sub is not wanted => Skip
-			else:
-				dllink = "http://www.subtitlesource.org/download/zip/id" %id
-				print "Link added: %s (%s)" %(dllink,self.getLG(sublang))
-				result = {}
-				result["link"] = dllink
-				result["lang"] = self.getLG(sublang)
-				sublinks.append(result)
 		return sublinks
-		'''
-		return None
 
 	def getValue(self, sub, tagName):
 		for node in sub.childNodes:
 			if node.nodeType == node.ELEMENT_NODE and node.tagName == tagName:
-				print node.childNodes[0].nodeValue
 				return node.childNodes[0].nodeValue
-
-if __name__ == "__main__":
-	s = SubtitleSource()
-	s.process("/media/disk/Videos/Series/Battlestar Galactica/Battlestar.Galactica.S04E13.HDTV.XviD-0TV.avi", None)

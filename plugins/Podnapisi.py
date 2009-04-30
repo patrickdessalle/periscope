@@ -16,7 +16,7 @@
 #    along with emesene; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-import zipfile, os, urllib2, urllib
+import zipfile, os, urllib2, urllib, logging
 from BeautifulSoup import BeautifulSoup
 
 import SubtitleDatabase
@@ -28,14 +28,6 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 
 		self.host = "http://www.podnapisi.net/"
 		self.search = "ppodnapisi/search?"
-	
-	def process(self, filename, langs):
-		''' main method to call on the plugin, pass the filename and the wished 
-		languages and it will query SubtitlesSource.org '''
-		if os.path.isfile(filename):
-			filename = os.path.basename(filename).rsplit(".", 1)[0]
-		print "Filename : %s" %filename
-		return self.query(filename, langs)
 		
 	def createFile(self, suburl, videofilename):
 		'''pass the URL of the sub and the file it matches, will unzip it
@@ -67,11 +59,10 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 			params["sJ"] = 0
 
 		searchurl = self.host + self.search + urllib.urlencode(params)
-		print "dl'ing %s" %searchurl
+		logging.debug("dl'ing %s" %searchurl)
 		page = urllib2.urlopen(searchurl)
 		soup = BeautifulSoup(page)
 		for subs in soup("tr", {"class":"bg1"}) + soup("tr", {"class": "bg2"}):
-			#print subs
 			dltag = subs.find("a")
 			href_start = str(dltag).find("href")+6
 			dllink = "http://www.podnapisi.net" + str(dltag)[href_start:str(dltag).find(">", href_start)-1]
