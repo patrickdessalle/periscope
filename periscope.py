@@ -21,6 +21,9 @@ import getopt
 import sys
 import os
 import traceback
+import ConfigParser
+
+import xdg.BaseDirectory as bd
 
 import plugins
 
@@ -28,7 +31,37 @@ class Periscope:
 	''' Main Periscope class'''
 	
 	def __init__(self):
+		self.config = ConfigParser.SafeConfigParser({"lang": "en"})
+		self.config_file = os.path.join(bd.xdg_config_home, "periscope", "config")
+		if not os.path.exists(self.config_file):
+			folder = os.path.dirname(self.config_file)
+			if not os.path.exists(folder):
+				print "Creating folder %s" %folder
+				os.mkdir(folder)
+			print "Creating config file"
+			configfile = open(self.config_file, "w")
+			self.config.write(configfile)
+			configfile.close()
+
 		self.pluginNames = self.listExistingPlugins()
+		self._preferedLanguages = None
+
+	def get_preferedLanguages(self):
+		lang = self.config.get("DEFAULT", "lang")
+		print "lang read from config: " + lang
+		if lang == "":
+			return None
+		else:
+			return lang.split(",")
+
+	def set_preferedLanguages(self, langs):
+		self.config.set("DEFAULT", "lang", ",".join(langs))
+		configfile = open(self.config_file, "w")
+		self.config.write(configfile)
+		configfile.close()
+
+	preferedLanguages = property(get_preferedLanguages, set_preferedLanguages)
+
 	
 	def deactivatePlugin(self, pluginName):
 		self.pluginNames - pluginName
@@ -49,7 +82,7 @@ class Periscope:
 		#if not os.path.isfile(filename):
 			#raise InvalidFileException(filename, "does not exist")
 	
-		print "Searching subtitles for %s" %filename
+		print "Searching subtitles for %s with langs %s" %(filename, langs)
 		subtitles = []
 		for name in self.pluginNames:
 			plugin = name()
