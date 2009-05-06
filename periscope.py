@@ -17,59 +17,109 @@
 #    along with emesene; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+import getopt
+import sys
 import os
-import mimetypes
-from optparse import OptionParser
-import logging
-import periscope
+import traceback
 
-SUPPORTED_FORMATS = 'video/x-msvideo', 'video/quicktime'
+import plugins
 
-def main():
-	'''Download subtitles'''
-	# parse command line options
-	parser = OptionParser("usage: %prog [options] file1 file2")
-	parser.add_option("-l", "--language", action="append", dest="langs", help="wanted language (ISO 639-1 two chars) for the subtitles (fr, en, ja, ...). If none is specified will download a subtitle in any language. This option can be used multiple times like %prog -l fr -l en file1 will try to download in french and then in english if no french subtitles are found.")
-	parser.add_option("-q", "--query", action="append", dest="queries", help="query to send to the subtitles website")
-	parser.add_option("--debug", action="store_true", dest="debug", help="set the logging level to debug")
-	(options, args) = parser.parse_args()
-
-	if not args:
-		print parser.print_help()
-		exit()
-
-	# process args
-	if options.debug:
-		logging.basicConfig(level=logging.DEBUG)
-		print "setting logging level to debug"
-			
-	if options.queries: args += options.queries
-	videos = []
-	for arg in args:
-		videos += recursive_search(arg)
-
-	for arg in videos:
-		periscope_client = periscope.Periscope()
-		if not options.langs: #Look into the config
-			logging.info("No lang given, looking into config file")
-			langs = periscope_client.preferedLanguages
-		else:
-			langs = options.langs
-		sub = periscope_client.downloadSubtitle(arg, langs)
-
-def recursive_search(entry):
-	'''searches files in the dir'''
-	files = []
-	if os.path.isdir(entry):
-		for e in os.listdir(entry):
-			files += recursive_search(os.path.join(entry, e))
-	elif os.path.isfile(entry):
-		mimetype = mimetypes.guess_type(entry)[0]
-		if mimetype in SUPPORTED_FORMATS:
-			files.append(os.path.normpath(entry))
-		else :
-			logger.warn("%s mimetype i '%s' which is not supported (%s)" %(entry, mimetype, SUPPORTED_FORMATS))
-	return files
+class Periscope:
+	''' Main Periscope class'''
 	
-if __name__ == "__main__":
-	main()
+	def __init__(self):
+		self.pluginNames = self.listExistingPlugins()
+	
+	def deactivatePlugin(self, pluginName):
+		self.pluginNames - pluginName
+		
+	def activatePlugin(self, pluginName):
+		if pluginName not in self.listExistingPlugins():
+			raise ImportError("No plugin with the name %s exists" %pluginName)
+		self.pluginNames + pluginName
+		
+	def listActivePlugins(self):
+		return self.pluginNames
+		
+	def listExistingPlugins(self):
+		return plugins.SubtitleDatabase.SubtitleDB.__subclasses__()
+	
+	def listSubtitles(self, filename, langs=None):
+		'''Searches subtitles within the plugins and returns all found matching subtitles ordered by language then by plugin.'''
+		#if not os.path.isfile(filename):
+			#raise InvalidFileException(filename, "does not exist")
+	
+		print "Searching subtitles for %s" %filename
+		subtitles = []
+		for name in self.pluginNames:
+			plugin = name()
+			print "Searching On %s " %plugin.__class__.__name__,
+			try:
+				subs = plugin.process(filename, langs)
+				map(lambda item: item.setdefault("plugin", plugin), subs)
+				map(lambda item: item.setdefault("filename", filename), subs)
+				subtitles += subs
+			except Exception, e:
+				print "Error raised by plugin %s: %s" %(name, e)
+				traceback.print_exc()
+			print "Total: %s subtitles so far" %len(subtitles)
+			
+		if len(subtitles) == 0:
+			return None
+		return subtitles
+	
+	
+	def selectBestSubtitle(self, subtitles, langs=None):
+		'''Searches subtitles from plugins and select the best subtitles '''
+		if not subtitles:
+			return None
+
+		if not langs: # No preferred language => return the first
+				return subtitles[0]
+		
+		subtitles = self.regroupSubtitles(subtitles)
+		for l in langs:
+			if subtitles.has_key(l) and len(subtitles[l]):
+				return subtitles[l][0]
+
+		return None #Could not find subtitles
+
+	def downloadSubtitle(self, filename, langs=None):
+		''' Takes a filename and a language and creates ONE subtitle through plugins'''
+		subtitles = self.listSubtitles(filename, langs)
+		subtitle = self.selectBestSubtitle(subtitles, langs)
+		if subtitle:
+			#Download the subtitle
+			subpath = subtitle["plugin"].createFile(subtitle["link"], filename)
+			subtitle["subtitlepath"] = subpath
+			return subtitle
+		
+		
+	def regroupSubtitles(self, subs):
+		'''reorders the subtitles according to the languages then the website'''
+		try:
+			from collections import defaultdict
+			subtitles = defaultdict(list) #Order matters (order of plugin and result from plugins)
+			for s in subs:
+				subtitles[s["lang"]].append(s)
+			return subtitles
+		except ImportError, e: #Don't use Python 2.5
+			subtitles = {}
+			for s in subs:
+				# return subtitles[s["lang"]], if it does not exist, set it to [] and return it, then append the subtitle
+				subtitles.setdefault(s["lang"], []).append(s)
+			return subtitles
+
+class Subtitle:
+	''' Attributes and method characterizing a subtitle'''
+	def __init__(self, filename, lang=None, link=None, downloadmethod=None):
+		self.filename = filename
+		self.lang = lang
+		self.link = link
+		self.downloadmethod = downloadmethod
+		
+	def download(self):
+		self.downloadmethod(self.link, self.filename)
+		
+
+
