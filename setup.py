@@ -6,7 +6,7 @@ VERSION = '0.1.4'
 #setup(name=PACKAGE, version=VERSION, packages=['plugins', 'periscope.py', '__init__.py'])
 
 setup(name = PACKAGE, version = VERSION,
-      license = "GNU GPL",
+      license = "GNU LGPL",
       description = "Python module to download subtitles for a given video file",
       author = "Patrick Dessalle",
       author_email = "patrick.dessalle@gmail.com",

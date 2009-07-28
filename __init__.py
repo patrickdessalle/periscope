@@ -1,2 +1,2 @@
-from periscope import Periscope
+from periscope import *
 from plugins import *

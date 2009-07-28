@@ -3,17 +3,17 @@
 
 #   This file is part of periscope.
 #
-#    periscope is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation; either version 2 of the License, or
-#    (at your option) any later version.
+#    periscope is free software; you can redistribute it and/or
+#    modify it under the terms of the GNU Lesser General Public
+#    License as published by the Free Software Foundation; either
+#    version 2 of the License, or (at your option) any later version.
 #
 #    periscope is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#    GNU Lesser General Public License for more details.
 #
-#    You should have received a copy of the GNU General Public License
+#    You should have received a copy of the GNU Lesser General Public License
 #    along with emesene; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
@@ -23,7 +23,7 @@ from optparse import OptionParser
 import logging
 import periscope
 
-SUPPORTED_FORMATS = 'video/x-msvideo', 'video/quicktime'
+SUPPORTED_FORMATS = 'video/x-msvideo', 'video/quicktime', 'video/x-matroska', 'video/mp4'
 
 def main():
 	'''Download subtitles'''
@@ -41,11 +41,8 @@ def main():
 	# process args
 	if options.debug:
 		logging.basicConfig(level=logging.DEBUG)
-		print "setting logging level to debug"
-		logging.debug("Test")
-		logging.info("Test2")
-		logging.warn("Test3")
-		logging.error("Test4")
+	else:
+		logging.basicConfig(level=logging.INFO)
 			
 	if options.queries: args += options.queries
 	videos = []
@@ -72,7 +69,7 @@ def recursive_search(entry):
 		if mimetype in SUPPORTED_FORMATS:
 			files.append(os.path.normpath(entry))
 		else :
-			logger.warn("%s mimetype i '%s' which is not supported (%s)" %(entry, mimetype, SUPPORTED_FORMATS))
+			logging.warn("%s mimetype is '%s' which is not a supported video format (%s)" %(entry, mimetype, SUPPORTED_FORMATS))
 	return files
 	
 if __name__ == "__main__":

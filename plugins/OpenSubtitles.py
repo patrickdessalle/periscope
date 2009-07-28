@@ -20,10 +20,64 @@ import os, struct, xmlrpclib, commands, gzip, traceback, logging
 
 import SubtitleDatabase
 
+OS_LANGS ={ "en": "eng", 
+			"fr" : "fre", 
+			"hu": "hun", 
+			"cs": "cze", 
+			"pl" : "pol", 
+			"sk" : "slo", 
+			"pt" : "por", 
+			"pt-br" : "pob", 
+			"es" : "spa", 
+			"el" : "ell", 
+			"ar":"ara",
+			'sq':'alb',
+			"hy":"arm",
+			"ay":"ass",
+			"bs":"bos",
+			"pb":"pob",
+			"bg":"bul",
+			"ca":"cat",
+			"zh":"chi",
+			"hr":"hrv",
+			"da":"dan",
+			"nl":"dut",
+			"eo":"epo",
+			"et":"est",
+			"fi":"fin",
+			"gl":"glg",
+			"ka":"geo",
+			"de":"ger",
+			"he":"heb",
+			"hi":"hin",
+			"is":"ice",
+			"id":"ind",
+			"it":"ita",
+			"ja":"jpn",
+			"kk":"kaz",
+			"ko":"kor",
+			"lv":"lav",
+			"lt":"lit",
+			"lb":"ltz",
+			"mk":"mac",
+			"ms":"may",
+			"no":"nor",
+			"oc":"oci",
+			"fa":"per",
+			"ro":"rum",
+			"ru":"rus",
+			"sr":"scc",
+			"sl":"slv",
+			"sv":"swe",
+			"th":"tha",
+			"tr":"tur",
+			"uk":"ukr",
+			"vi":"vie"}
+
 class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 
 	def __init__(self):
-		super(OpenSubtitles, self).__init__({"en": "eng", "fr" : "fre", "hu": "hun", "cs": "cze", "pl" : "pol", "sk" : "slo", "pt" : "por", "pt-br" : "pob", "es" : "spa", "el" : "ell"})
+		super(OpenSubtitles, self).__init__(OS_LANGS)
 		self.server_url = 'http://www.opensubtitles.org/xml-rpc'
 		self.revertlangs = dict(map(lambda item: (item[1],item[0]), self.langs.items()))
 
@@ -59,21 +113,21 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 		''' 
 		longlongformat = 'LL'  # signed long, unsigned long 
 		bytesize = struct.calcsize(longlongformat) 
-		    
+
 		f = open(name, "rb")
 		filesize = os.path.getsize(name) 
 		hash = filesize
-		    
+
 		if filesize < 2**16: 
-		       raise invalidFileException(name, "SizeError < 2**16")
-		 
+			raise invalidFileException(name, "SizeError < 2**16")
+
 		for x in range(65536/bytesize): 
 			buffer = f.read(bytesize) 
 			(l2, l1)= struct.unpack(longlongformat, buffer) 
 			l_value = (long(l1) << 32) | long(l2) 
 			hash += l_value 
 			hash = hash & 0xFFFFFFFFFFFFFFFF #to remain as 64bit number  
-			 
+
 
 		f.seek(filesize-65536,0) 
 		for x in range(65536/bytesize): 
@@ -82,20 +136,28 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 			l_value = (long(l1) << 32) | long(l2) 
 			hash += l_value 
 			hash = hash & 0xFFFFFFFFFFFFFFFF 
-		 
+
 		f.close() 
 		returnedhash =  "%016x" % hash 
 		return returnedhash 
 
-	def query(self, filename, token='', moviehash=None, imdbID=None, bytesize=None, langs=None):
-		''' makes a query on opensubtitles and returns info about found subtitles'''
+	def query(self, filename, imdbID=None, moviehash=None, bytesize=None, langs=None):
+		''' Makes a query on opensubtitles and returns info about found subtitles.
+			Note: if using moviehash, bytesize is required.	'''
 		server = xmlrpclib.Server(self.server_url)
+		log_result = server.LogIn("","","eng","Totem")
+		logging.debug(log_result)
+		token = log_result["token"]
+		if not token:
+			logging.error("Open subtitles did not return a token after logging in.")
+			return []
 		search = {}
 		if moviehash: search['moviehash'] = moviehash
 		if imdbID: search['imdbid'] = imdbID
 		if bytesize: search['moviebytesize'] = str(bytesize)
 		if langs: search['sublanguageid'] = ",".join([self.getLanguage(lang) for lang in langs])
 
+		logging.debug("query: token='%s', search='%s'" % (token, search))
 		try:
 			if search:
 				results = server.SearchSubtitles(token, [search])
@@ -105,6 +167,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 			logging.error("Could not query the server OpenSubtitles")
 			logging.debug(traceback)
 			return []
+		logging.debug("Result: %s" %str(results))
 
 		sublinks = []
 		if results['data']:
@@ -116,6 +179,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 				result["link"] = r['SubDownloadLink']
 				result["lang"] = self.getLG(r['SubLanguageID'])
 				sublinks.append(result)
+		server.LogOut(token)
 		return sublinks
 
 	def sort_by_moviereleasename(self, x, y):

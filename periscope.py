@@ -20,12 +20,18 @@
 import getopt
 import sys
 import os
+import threading
+import logging
+from Queue import Queue
+
 import traceback
 import ConfigParser
 
 import xdg.BaseDirectory as bd
 
 import plugins
+
+SUPPORTED_FORMATS = 'video/x-msvideo', 'video/quicktime', 'video/x-matroska', 'video/mp4'
 
 class Periscope:
 	''' Main Periscope class'''
@@ -36,9 +42,9 @@ class Periscope:
 		if not os.path.exists(self.config_file):
 			folder = os.path.dirname(self.config_file)
 			if not os.path.exists(folder):
-				print "Creating folder %s" %folder
+				logging.info("Creating folder %s" %folder)
 				os.mkdir(folder)
-			print "Creating config file"
+			logging.info("Creating config file")
 			configfile = open(self.config_file, "w")
 			self.config.write(configfile)
 			configfile.close()
@@ -48,7 +54,7 @@ class Periscope:
 
 	def get_preferedLanguages(self):
 		lang = self.config.get("DEFAULT", "lang")
-		print "lang read from config: " + lang
+		logging.info("lang read from config: " + lang)
 		if lang == "":
 			return None
 		else:
@@ -82,20 +88,26 @@ class Periscope:
 		#if not os.path.isfile(filename):
 			#raise InvalidFileException(filename, "does not exist")
 	
-		print "Searching subtitles for %s with langs %s" %(filename, langs)
+		logging.info("Searching subtitles for %s with langs %s" %(filename, langs))
 		subtitles = []
+		q = Queue()
 		for name in self.pluginNames:
 			plugin = name()
-			print "Searching On %s " %plugin.__class__.__name__,
-			try:
-				subs = plugin.process(filename, langs)
-				map(lambda item: item.setdefault("plugin", plugin), subs)
-				map(lambda item: item.setdefault("filename", filename), subs)
-				subtitles += subs
-			except Exception, e:
-				print "Error raised by plugin %s: %s" %(name, e)
-				traceback.print_exc()
-			print "Total: %s subtitles so far" %len(subtitles)
+			logging.info("Searching on %s " %plugin.__class__.__name__)
+			thread = threading.Thread(target=plugin.searchInThread, args=(q, filename, langs))
+			thread.start()
+
+		# Get data from the queue and wait till we have a result
+		for name in self.pluginNames:
+			subs = q.get(True)
+			if subs and len(subs) > 0:
+				if not langs:
+					return subs[0]
+				else:
+					for sub in subs:
+						if sub["lang"] == langs[0]:
+							return [sub] # Return an array with just that sub
+					subtitles += subs
 			
 		if len(subtitles) == 0:
 			return None
@@ -103,14 +115,14 @@ class Periscope:
 	
 	
 	def selectBestSubtitle(self, subtitles, langs=None):
-		'''Searches subtitles from plugins and select the best subtitles '''
+		'''Searches subtitles from plugins and returns the best subtitles from all candidates'''
 		if not subtitles:
 			return None
 
 		if not langs: # No preferred language => return the first
 				return subtitles[0]
 		
-		subtitles = self.regroupSubtitles(subtitles)
+		subtitles = self.__orderSubtitles__(subtitles)
 		for l in langs:
 			if subtitles.has_key(l) and len(subtitles[l]):
 				return subtitles[l][0]
@@ -120,7 +132,11 @@ class Periscope:
 	def downloadSubtitle(self, filename, langs=None):
 		''' Takes a filename and a language and creates ONE subtitle through plugins'''
 		subtitles = self.listSubtitles(filename, langs)
+		logging.info("All subtitles: ")
+		logging.info(subtitles)
 		subtitle = self.selectBestSubtitle(subtitles, langs)
+		logging.info("Best subtitles: ")
+		logging.info(subtitle)
 		if subtitle:
 			#Download the subtitle
 			subpath = subtitle["plugin"].createFile(subtitle["link"], filename)
@@ -128,7 +144,7 @@ class Periscope:
 			return subtitle
 		
 		
-	def regroupSubtitles(self, subs):
+	def __orderSubtitles__(self, subs):
 		'''reorders the subtitles according to the languages then the website'''
 		try:
 			from collections import defaultdict

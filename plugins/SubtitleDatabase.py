@@ -16,7 +16,7 @@
 #    along with emesene; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-import os, shutil, urllib2, sys, logging
+import os, shutil, urllib2, sys, logging, traceback
 
 class SubtitleDB(object):
 	''' Base (kind of abstract) class that represent a SubtitleDB, usually a website. Should be rewritten using abc module in Python 2.6/3K'''
@@ -29,15 +29,21 @@ class SubtitleDB(object):
 		subs = self.process(filename, langs)
 		map(lambda item: item.setdefault("plugin", self), subs)
 		map(lambda item: item.setdefault("filename", filename), subs)
-		queue.put(subs, True)
+		logging.info("%s writing %s items to queue" % (self.__class__.__name__, len(subs)))
+		queue.put(subs, True) # Each plugin must write as the caller periscopy.py waits for an result on the queue
 	
 	def process(self, filename, langs):
 		''' main method to call on the plugin, pass the filename and the wished 
 		languages and it will query the subtitles source '''
 		if os.path.isfile(filename):
 			filename = os.path.basename(filename).rsplit(".", 1)[0]
-		return self.query(filename, langs)
-		
+		try:
+			return self.query(filename, langs)
+		except Exception, e:
+			logging.error("Error raised by plugin %s: %s" %(self.__class__.__name__, e))
+			traceback.print_exc()
+			return []
+
 	def downloadFile(self, url, filename):
 		''' Downloads the given url to the given filename '''
 		logging.info("Downloading %s" %url)
@@ -53,14 +59,14 @@ class SubtitleDB(object):
 		try:
 			return self.revertlangs[language]
 		except KeyError, e:
-			print "Ooops, you found a missing language in the config file of %s: %s. Send a bug report to have it added." %(self.__class__.__name__, language)
+			logging.warn("Ooops, you found a missing language in the config file of %s: %s. Send a bug report to have it added." %(self.__class__.__name__, language))
 		
 	def getLanguage(self, lg):
 		''' Returns the long naming of the language on a two character code '''
 		try:
 			return self.langs[lg]
 		except KeyError, e:
-			print "Ooops, you found a missing language in the config file of %s: %s. Send a bug report to have it added." %(self.__class__.__name__, lg)
+			logging.warn("Ooops, you found a missing language in the config file of %s: %s. Send a bug report to have it added." %(self.__class__.__name__, lg))
 	
 	def createFile(self, suburl, videofilename):
 		raise TypeError("%s has not implemented method '%s'" %(self.__class__.__name__, sys._getframe().f_code.co_name))
