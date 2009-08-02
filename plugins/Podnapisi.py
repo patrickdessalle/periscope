@@ -75,16 +75,13 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 		else:
 			params["sJ"] = 0
 
-		#Podnapisi does not always list release teams in the filename, so I'll remove the .[VTV]
-		#token = token[:token.rfind(".[")]
-
 		searchurl = self.host + self.search + urllib.urlencode(params)
 		logging.debug("dl'ing %s" %searchurl)
 		page = urllib2.urlopen(searchurl)
 		
 		soup = BeautifulSoup(page)
 		for subs in soup("tr", {"class":"a"}):
-			if subs.find("span", {"class" : "opis"}).find("span")["title"] == token:
+			if token in subs.find("span", {"class" : "opis"}).find("span")["title"].split(" "):
 				logging.debug(subs)
 				links = subs.findAll("a")
 				lng = subs.find("a").find("img")["src"].rsplit("/", 1)[1][:-4]
@@ -97,23 +94,6 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 				result["link"] = dllink
 				result["lang"] = self.getLG(lng)
 				sublinks.append(result)
-			'''
-			dltag = subs.find("a")
-			href_start = str(dltag).find("href")+6
-			dllink = self.host + str(dltag)[href_start:str(dltag).find(">", href_start)-1]
 
-			lng_img = subs.find("a", {"rel": "nofollow"}).find("img")["src"]
-			lng = lng_img.rsplit("/", 1)[1][:-4]
-			title = subs.find("span").find("span")
-			if title:
-				release_name = title["onmouseover"].split("'")[1]
-				if release_name == token:
-					if langs and not self.getLG(lng) in langs:
-						continue # The lang of this sub is not wanted => Skip
-					result = {}
-					result["link"] = dllink
-					result["lang"] = self.getLG(lng)
-					sublinks.append(result)
-			'''
 		logging.debug(sublinks)
 		return sublinks
