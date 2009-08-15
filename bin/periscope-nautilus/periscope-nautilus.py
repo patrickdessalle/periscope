@@ -82,6 +82,9 @@ class DownloadSubtitles(nautilus.MenuProvider):
 			n = pynotify.Notification(title, msg, gtk.STOCK_FIND_AND_REPLACE)
 			n.set_timeout(pynotify.EXPIRES_DEFAULT)
 			n.show()
+			print title
+		else:
+			print "Could not show notification window"
 			
 		
 class PeriscopeInvoker(threading.Thread):
