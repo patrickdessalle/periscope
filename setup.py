@@ -1,7 +1,7 @@
 from setuptools import setup
 
 PACKAGE = 'periscope'
-VERSION = '0.1.4'
+VERSION = '0.1.6'
 
 #setup(name=PACKAGE, version=VERSION, packages=['plugins', 'periscope.py', '__init__.py'])
 
@@ -11,7 +11,7 @@ setup(name = PACKAGE, version = VERSION,
       author = "Patrick Dessalle",
       author_email = "patrick.dessalle@gmail.com",
       url = "http://code.google.com/p/periscope/",
-      packages= [ "", "plugins" ],
+      packages= [ "periscope", "periscope/plugins" ],
       py_modules=["periscope"],
       scripts = [ "bin/periscope" ]
       )
