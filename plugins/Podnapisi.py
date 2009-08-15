@@ -81,7 +81,7 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 		
 		soup = BeautifulSoup(page)
 		for subs in soup("tr", {"class":"a"}):
-			if token in subs.find("span", {"class" : "opis"}).find("span")["title"].split(" "):
+			if token.lower() in subs.find("span", {"class" : "opis"}).find("span")["title"].lower().split(" "):
 				logging.debug(subs)
 				links = subs.findAll("a")
 				lng = subs.find("a").find("img")["src"].rsplit("/", 1)[1][:-4]
