@@ -65,6 +65,8 @@ def recursive_search(entry):
 		for e in os.listdir(entry):
 			files += recursive_search(os.path.join(entry, e))
 	elif os.path.isfile(entry):
+		# Add mkv mimetype to the list
+		mimetypes.add_type("video/x-matroska", ".mkv")
 		mimetype = mimetypes.guess_type(entry)[0]
 		if mimetype in SUPPORTED_FORMATS:
 			files.append(os.path.normpath(entry))
