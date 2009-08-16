@@ -90,7 +90,7 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 		for lang in languages:
 			searchurl = "%s/%s/%s/0" %(self.host, urllib.quote(token), lang)
 			logging.debug("dl'ing %s" %searchurl)
-			page = urllib2.urlopen(searchurl)
+			page = urllib2.urlopen(searchurl, timeout=5)
 			xmltree = xml.dom.minidom.parse(page)
 			subs = xmltree.getElementsByTagName("sub")
 
