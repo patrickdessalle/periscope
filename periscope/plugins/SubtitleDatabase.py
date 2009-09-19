@@ -52,7 +52,7 @@ class SubtitleDB(object):
 		dump.write(f.read())
 		dump.close()
 		f.close()
-		logging.debug("Download finished to file %s"%filename)
+		logging.debug("Download finished to file %s. Size : %s"%(filename,os.path.getsize(filename)))
 		
 	def getLG(self, language):
 		''' Returns the short (two-character) representation of the long language name'''

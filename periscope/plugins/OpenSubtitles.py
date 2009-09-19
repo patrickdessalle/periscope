@@ -87,10 +87,10 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 		if os.path.isfile(filepath):
 			filehash = self.hashFile(filepath)
 			size = os.path.getsize(filepath)
-			filename = os.path.basename(filepath).rsplit(".", 1)[0]
-			return self.query(moviehash=filehash, langs=langs, bytesize=size, filename=filename)
+			fname = os.path.basename(filepath).rsplit(".", 1)[0]
+			return self.query(moviehash=filehash, langs=langs, bytesize=size, filename=fname)
 		else:
-			return self.query(token=filename, langs=langs, filename=filename)
+			return self.query(token=fname, langs=langs, filename=fname)
 		
 	def createFile(self, suburl, videofilename):
 		'''pass the URL of the sub and the file it matches, will unzip it
@@ -145,7 +145,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 		''' Makes a query on opensubtitles and returns info about found subtitles.
 			Note: if using moviehash, bytesize is required.	'''
 		server = xmlrpclib.Server(self.server_url)
-		log_result = server.LogIn("","","eng","Totem")
+		log_result = server.LogIn("","","eng","periscope")
 		logging.debug(log_result)
 		token = log_result["token"]
 		if not token:
