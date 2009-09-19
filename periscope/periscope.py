@@ -102,12 +102,11 @@ class Periscope:
 			subs = q.get(True)
 			if subs and len(subs) > 0:
 				if not langs:
-					return subs[0]
+					subtitles += subs
 				else:
 					for sub in subs:
-						if sub["lang"] == langs[0]:
-							return [sub] # Return an array with just that sub
-					subtitles += subs
+						if sub["lang"] in langs:
+							subtitles += [sub] # Add an array with just that sub
 			
 		if len(subtitles) == 0:
 			return None
