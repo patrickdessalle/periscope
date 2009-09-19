@@ -90,7 +90,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 			fname = os.path.basename(filepath).rsplit(".", 1)[0]
 			return self.query(moviehash=filehash, langs=langs, bytesize=size, filename=fname)
 		else:
-			return self.query(token=fname, langs=langs, filename=fname)
+			return self.query(token=filepath, langs=langs, filename=filepath)
 		
 	def createFile(self, suburl, videofilename):
 		'''pass the URL of the sub and the file it matches, will unzip it
