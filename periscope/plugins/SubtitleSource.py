@@ -30,6 +30,8 @@ SS_LANGUAGES = {"en": "English",
 				"is" : "Icelandic"}
 
 class SubtitleSource(SubtitleDatabase.SubtitleDB):
+	url = "http://www.subtitlesource.org/"
+	site_name = "SubtitleSource"
 
 	def __init__(self):
 		super(SubtitleSource, self).__init__(SS_LANGUAGES)
@@ -59,7 +61,7 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 					logging.info("File %s does not seem to be valid " %el.orig_filename)
 			# Deleting the zip file
 			zf.close()
-			#os.remove(zipfilename)
+			os.remove(zipfilename)
 			return srtbasefilename + ".srt"
 		else:
 			logging.info("Unexpected file type (not zip)")
@@ -106,6 +108,7 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 				dllink = "http://www.subtitlesource.org/download/zip/%s" %self.getValue(sub, "id")
 				logging.debug("Link added: %s (%s)" %(dllink,sublang))
 				result = {}
+				result["release"] = self.getValue(sub, "releasename")
 				result["link"] = dllink
 				result["lang"] = sublang
 				sublinks.append(result)

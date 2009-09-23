@@ -17,6 +17,7 @@
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import os, struct, xmlrpclib, commands, gzip, traceback, logging
+import socket # For timeout purposes
 
 import SubtitleDatabase
 
@@ -75,7 +76,9 @@ OS_LANGS ={ "en": "eng",
 			"vi":"vie"}
 
 class OpenSubtitles(SubtitleDatabase.SubtitleDB):
-
+	url = "http://www.opensubtitles.org/"
+	site_name = "OpenSubtitles"
+	
 	def __init__(self):
 		super(OpenSubtitles, self).__init__(OS_LANGS)
 		self.server_url = 'http://www.opensubtitles.org/xml-rpc'
@@ -145,9 +148,16 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 		''' Makes a query on opensubtitles and returns info about found subtitles.
 			Note: if using moviehash, bytesize is required.	'''
 		server = xmlrpclib.Server(self.server_url)
-		log_result = server.LogIn("","","eng","periscope")
-		logging.debug(log_result)
-		token = log_result["token"]
+		socket.setdefaulttimeout(None)
+		try:
+			log_result = server.LogIn("","","eng","periscope")
+			logging.debug(log_result)
+			token = log_result["token"]
+		except Exception:
+			logging.error("Open subtitles could not be contacted")
+			token = None
+			socket.setdefaulttimeout(None)
+			return []
 		if not token:
 			logging.error("Open subtitles did not return a token after logging in.")
 			return []
@@ -176,6 +186,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 			for r in sorted(results['data'], self.sort_by_moviereleasename):
 				# Only added if the MovieReleaseName matches the file
 				result = {}
+				result["release"] = r['SubFileName']
 				result["link"] = r['SubDownloadLink']
 				result["lang"] = self.getLG(r['SubLanguageID'])
 				sublinks.append(result)
