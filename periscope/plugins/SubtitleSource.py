@@ -73,7 +73,7 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 			filename = os.path.basename(filename).rsplit(".", 1)[0]
 		try:
 			subs = self.query(filename, langs)
-			if not subs:
+			if not subs and filename.rfind(".[") > 0:
 				# Try to remove the [VTV] or [EZTV] at the end of the file
 				teamless_filename = filename[0 : filename.rfind(".[")]
 				subs = self.query(teamless_filename, langs)
