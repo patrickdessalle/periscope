@@ -27,7 +27,11 @@ from Queue import Queue
 import traceback
 import ConfigParser
 
-import xdg.BaseDirectory as bd
+try:
+	import xdg.BaseDirectory as bd
+	is_local = True
+except ImportError:
+	is_local = False
 
 import plugins
 
@@ -38,16 +42,17 @@ class Periscope:
 	
 	def __init__(self):
 		self.config = ConfigParser.SafeConfigParser({"lang": "en"})
-		self.config_file = os.path.join(bd.xdg_config_home, "periscope", "config")
-		if not os.path.exists(self.config_file):
-			folder = os.path.dirname(self.config_file)
-			if not os.path.exists(folder):
-				logging.info("Creating folder %s" %folder)
-				os.mkdir(folder)
-			logging.info("Creating config file")
-			configfile = open(self.config_file, "w")
-			self.config.write(configfile)
-			configfile.close()
+		if is_local:
+			self.config_file = os.path.join(bd.xdg_config_home, "periscope", "config")
+			if not os.path.exists(self.config_file):
+				folder = os.path.dirname(self.config_file)
+				if not os.path.exists(folder):
+					logging.info("Creating folder %s" %folder)
+					os.mkdir(folder)
+				logging.info("Creating config file")
+				configfile = open(self.config_file, "w")
+				self.config.write(configfile)
+				configfile.close()
 
 		self.pluginNames = self.listExistingPlugins()
 		self._preferedLanguages = None
@@ -109,7 +114,7 @@ class Periscope:
 							subtitles += [sub] # Add an array with just that sub
 			
 		if len(subtitles) == 0:
-			return None
+			return []
 		return subtitles
 	
 	

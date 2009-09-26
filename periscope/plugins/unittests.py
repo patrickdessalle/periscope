@@ -11,7 +11,7 @@ class OpenSubtitlesTestCase(unittest.TestCase):
 		results = subdb.query('Night.Watch.2004.CD1.DVDRiP.XViD-FiCO.avi', moviehash="09a2c497663259cb", bytesize="733589504")
 		
 		assert len(results) > 0, 'No result found for the example moviehash'
-'''
+
 class SubtitleSourceTestCase(unittest.TestCase):
 	def runTest(self):
 		import SubtitleSource
@@ -39,6 +39,6 @@ class SubtitleSourceTestCase3(unittest.TestCase):
 		subdb = Podnapisi.Podnapisi()
 		results = subdb.query("My.Name.is.Earl.S04E24.HDTV.XviD-LOL", ["en"])
 		assert len(results) > 0, "No result could be found for My.Name.is.Earl.S04E24.HDTV.XviD-LOL in any languages"
-'''
+
 if __name__ == "__main__":
 	unittest.main()

@@ -16,7 +16,7 @@
 #    along with emesene; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-import zipfile, os, urllib2, urllib, xml.dom.minidom, logging
+import zipfile, os, urllib2, urllib, xml.dom.minidom, logging, traceback
 
 import SubtitleDatabase
 
