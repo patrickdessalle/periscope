@@ -26,7 +26,7 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 	site_name = "Podnapisi"
 
 	def __init__(self):
-		super(Podnapisi, self).__init__({"sl" : "1", "en": "2", "no" : "3", "ko" :"4", "de" : "5", "is" : "6", "cs" : "7", "fr" : "8", "it" : "9", "bs" : "10", "ja" : "11", "ar" : "12", "ro" : "13", "es-ar" : "14", "hu" : "15", "el" : "16", "zh" : "17", "lt" : "19", "et" : "20", "lv" : "21", "he" : "22", "nl" : "23", "da" : "24", "se" : "25", "pl" : "26", "ru" : "27", "es" : "28", "sq" : "29", "tr" : "30", "fi" : "31", "pt": "32", "bg" : "33", "mk" : "35", "sh" : "36", "sk" : "37", "hr" : "38", "zh" : "40", "hi": "42", "th" : "44", "uk": "46", "sr": "47", "pt-br" : "48", "ga": "49", "be": "50", "vi": "51", "fa": "52", "ca": "53", "id": "54"})
+		super(Podnapisi, self).__init__({"sl" : "1", "en": "2", "no" : "3", "ko" :"4", "de" : "5", "is" : "6", "cs" : "7", "fr" : "8", "it" : "9", "bs" : "10", "ja" : "11", "ar" : "12", "ro" : "13", "es-ar" : "14", "hu" : "15", "el" : "16", "zh" : "17", "lt" : "19", "et" : "20", "lv" : "21", "he" : "22", "nl" : "23", "da" : "24", "se" : "25", "pl" : "26", "ru" : "27", "es" : "28", "sq" : "29", "tr" : "30", "fi" : "31", "pt": "32", "bg" : "33", "mk" : "35", "sr" : "36", "sk" : "37", "hr" : "38", "zh" : "40", "hi": "42", "th" : "44", "uk": "46", "sr": "47", "pt-br" : "48", "ga": "49", "be": "50", "vi": "51", "fa": "52", "ca": "53", "id": "54"})
 
 		self.host = "http://www.sub-titles.net/"
 		self.search = "ppodnapisi/search?"
@@ -57,11 +57,15 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 		if os.path.isfile(filename):
 			filename = os.path.basename(filename).rsplit(".", 1)[0]
 		try:
-			subs = self.query(filename, langs)
-			if not subs:
-				# Try to remove the [VTV] or [EZTV] at the end of the file
-				teamless_filename = filename[0 : filename.rfind(".[")]
-				subs = self.query(teamless_filename, langs)
+			subs = []
+			for lang in langs:
+				#query one language at a time
+				subs_lang = self.query(filename, [lang])
+				if not subs_lang:
+					# Try to remove the [VTV] or [EZTV] at the end of the file
+					teamless_filename = filename[0 : filename.rfind(".[")]
+					subs_lang = self.query(teamless_filename, langs)
+				subs += subs_lang
 			return subs
 		except Exception, e:
 			logging.error("Error raised by plugin %s: %s" %(self.__class__.__name__, e))
