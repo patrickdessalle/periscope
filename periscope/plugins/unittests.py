@@ -3,7 +3,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-class OpenSubtitlesTestCase(unittest.TestCase):
+'''class OpenSubtitlesTestCase(unittest.TestCase):
 	def runTest(self):
 		import OpenSubtitles
 		subdb = OpenSubtitles.OpenSubtitles()
@@ -39,6 +39,13 @@ class SubtitleSourceTestCase3(unittest.TestCase):
 		subdb = Podnapisi.Podnapisi()
 		results = subdb.query("My.Name.is.Earl.S04E24.HDTV.XviD-LOL", ["en"])
 		assert len(results) > 0, "No result could be found for My.Name.is.Earl.S04E24.HDTV.XviD-LOL in any languages"
+'''
 
+class SubSceneTestCase(unittest.TestCase):
+	def runTest(self):
+		import SubScene
+		subdb = SubScene.SubScene()
+		results = subdb.query("Dexter.S04E01.HDTV.XviD-NoTV")
+		assert len(results) > 0, "No result could be found for Dexter.S04E01.HDTV.XviD-NoTV and no languages"
 if __name__ == "__main__":
 	unittest.main()

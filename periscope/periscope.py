@@ -96,7 +96,7 @@ class Periscope:
 		logging.info("Searching subtitles for %s with langs %s" %(filename, langs))
 		subtitles = []
 		q = Queue()
-		for name in self.pluginNames:
+		for name in self.pluginNamespluginNames:
 			plugin = name()
 			logging.info("Searching on %s " %plugin.__class__.__name__)
 			thread = threading.Thread(target=plugin.searchInThread, args=(q, filename, langs))

@@ -30,26 +30,6 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 
 		self.host = "http://www.sub-titles.net/"
 		self.search = "ppodnapisi/search?"
-		
-	def createFile(self, suburl, videofilename):
-		'''pass the URL of the sub and the file it matches, will unzip it
-		and return the path to the created file'''
-		srtbasefilename = videofilename.rsplit(".", 1)[0]
-		zipfilename = srtbasefilename +".zip"
-		self.downloadFile(suburl, zipfilename)
-		
-		if zipfile.is_zipfile(zipfilename):
-			zf = zipfile.ZipFile(zipfilename, "r")
-			for el in zf.infolist():
-				if el.orig_filename.rsplit(".", 1)[1] in ("srt", "sub"):
-					outfile = open(srtbasefilename + ".srt", "wb")
-					outfile.write(zf.read(el.orig_filename))
-					outfile.flush()
-					outfile.close()
-			# Deleting the zip file
-			zf.close()
-			os.remove(zipfilename)
-			return srtbasefilename + ".srt"
 			
 	def process(self, filename, langs):
 		''' main method to call on the plugin, pass the filename and the wished 

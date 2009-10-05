@@ -43,6 +43,31 @@ class SubtitleDB(object):
 			logging.error("Error raised by plugin %s: %s" %(self.__class__.__name__, e))
 			traceback.print_exc()
 			return []
+		
+	def createFile(self, suburl, videofilename):
+		'''pass the URL of the sub and the file it matches, will unzip it
+		and return the path to the created file'''
+		srtbasefilename = videofilename.rsplit(".", 1)[0]
+		zipfilename = srtbasefilename +".zip"
+		self.downloadFile(suburl, zipfilename)
+		
+		if zipfile.is_zipfile(zipfilename):
+			logging.debug("Unzipping file " + zipfilename)
+			zf = zipfile.ZipFile(zipfilename, "r")
+			for el in zf.infolist():
+				if el.orig_filename.rsplit(".", 1)[1] in ("srt", "sub", "txt"):
+					outfile = open(srtbasefilename + ".srt", "wb")
+					outfile.write(zf.read(el.orig_filename))
+					outfile.flush()
+					outfile.close()
+				else:
+					logging.info("File %s does not seem to be valid " %el.orig_filename)
+			# Deleting the zip file
+			zf.close()
+			os.remove(zipfilename)
+			return srtbasefilename + ".srt"
+		else:
+			logging.info("Unexpected file type (not zip)")
 
 	def downloadFile(self, url, filename):
 		''' Downloads the given url to the given filename '''
@@ -67,9 +92,6 @@ class SubtitleDB(object):
 			return self.langs[lg]
 		except KeyError, e:
 			logging.warn("Ooops, you found a missing language in the config file of %s: %s. Send a bug report to have it added." %(self.__class__.__name__, lg))
-	
-	def createFile(self, suburl, videofilename):
-		raise TypeError("%s has not implemented method '%s'" %(self.__class__.__name__, sys._getframe().f_code.co_name))
 	
 	def query(self, token):
 		raise TypeError("%s has not implemented method '%s'" %(self.__class__.__name__, sys._getframe().f_code.co_name))

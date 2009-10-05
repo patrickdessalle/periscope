@@ -40,31 +40,6 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 		#http://www.subtitlesource.org/api/xmlsearch/heroes/swedish/0
 
 		self.host = "http://www.subtitlesource.org/api/xmlsearch"
-		
-	def createFile(self, suburl, videofilename):
-		'''pass the URL of the sub and the file it matches, will unzip it
-		and return the path to the created file'''
-		srtbasefilename = videofilename.rsplit(".", 1)[0]
-		zipfilename = srtbasefilename +".zip"
-		self.downloadFile(suburl, zipfilename)
-		
-		if zipfile.is_zipfile(zipfilename):
-			logging.debug("Unzipping file " + zipfilename)
-			zf = zipfile.ZipFile(zipfilename, "r")
-			for el in zf.infolist():
-				if el.orig_filename.rsplit(".", 1)[1] in ("srt", "sub", "txt"):
-					outfile = open(srtbasefilename + ".srt", "wb")
-					outfile.write(zf.read(el.orig_filename))
-					outfile.flush()
-					outfile.close()
-				else:
-					logging.info("File %s does not seem to be valid " %el.orig_filename)
-			# Deleting the zip file
-			zf.close()
-			os.remove(zipfilename)
-			return srtbasefilename + ".srt"
-		else:
-			logging.info("Unexpected file type (not zip)")
 			
 	def process(self, filename, langs):
 		''' main method to call on the plugin, pass the filename and the wished 
