@@ -75,10 +75,10 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 			sub_id = subs["id"][1:]
 			sub_id2 = subs["href"].split("'")[-2]
 			link = "http://subscene.com//s-dlpath-%s/%s/zip.zip" %(sub_id, sub_id2)
-			if release == token:
+			if release.startswith(token):
 				result = {}
 				result["release"] = release
-				result["lg"] = lang
+				result["lang"] = lang
 				result["link"] = link
 				sublinks.append(result)
 		return sublinks

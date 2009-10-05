@@ -46,6 +46,7 @@ class SubSceneTestCase(unittest.TestCase):
 		import SubScene
 		subdb = SubScene.SubScene()
 		results = subdb.query("Dexter.S04E01.HDTV.XviD-NoTV")
+		print results
 		assert len(results) > 0, "No result could be found for Dexter.S04E01.HDTV.XviD-NoTV and no languages"
 if __name__ == "__main__":
 	unittest.main()
