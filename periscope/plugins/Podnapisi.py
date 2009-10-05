@@ -16,7 +16,7 @@
 #    along with emesene; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-import zipfile, os, urllib2, urllib, logging
+import zipfile, os, urllib2, urllib, traceback, logging
 from BeautifulSoup import BeautifulSoup
 
 import SubtitleDatabase
@@ -58,14 +58,17 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 			filename = os.path.basename(filename).rsplit(".", 1)[0]
 		try:
 			subs = []
-			for lang in langs:
-				#query one language at a time
-				subs_lang = self.query(filename, [lang])
-				if not subs_lang:
-					# Try to remove the [VTV] or [EZTV] at the end of the file
-					teamless_filename = filename[0 : filename.rfind(".[")]
-					subs_lang = self.query(teamless_filename, langs)
-				subs += subs_lang
+			if langs:
+				for lang in langs:
+					#query one language at a time
+					subs_lang = self.query(filename, [lang])
+					if not subs_lang:
+						# Try to remove the [VTV] or [EZTV] at the end of the file
+						teamless_filename = filename[0 : filename.rfind(".[")]
+						subs_lang = self.query(teamless_filename, langs)
+					subs += subs_lang
+			else:
+				subs += self.query(filename)
 			return subs
 		except Exception, e:
 			logging.error("Error raised by plugin %s: %s" %(self.__class__.__name__, e))

@@ -148,7 +148,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 		''' Makes a query on opensubtitles and returns info about found subtitles.
 			Note: if using moviehash, bytesize is required.	'''
 		server = xmlrpclib.Server(self.server_url)
-		socket.setdefaulttimeout(None)
+		socket.setdefaulttimeout(1)
 		try:
 			log_result = server.LogIn("","","eng","periscope")
 			logging.debug(log_result)
@@ -191,6 +191,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 				result["lang"] = self.getLG(r['SubLanguageID'])
 				sublinks.append(result)
 		server.LogOut(token)
+		socket.setdefaulttimeout(None)
 		return sublinks
 
 	def sort_by_moviereleasename(self, x, y):
