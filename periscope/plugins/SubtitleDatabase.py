@@ -16,7 +16,7 @@
 #    along with emesene; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-import os, shutil, urllib2, sys, logging, traceback
+import os, shutil, urllib2, sys, logging, traceback, zipfile
 
 class SubtitleDB(object):
 	''' Base (kind of abstract) class that represent a SubtitleDB, usually a website. Should be rewritten using abc module in Python 2.6/3K'''
@@ -56,7 +56,7 @@ class SubtitleDB(object):
 			zf = zipfile.ZipFile(zipfilename, "r")
 			for el in zf.infolist():
 				if el.orig_filename.rsplit(".", 1)[1] in ("srt", "sub", "txt"):
-					outfile = open(srtbasefilename + ".srt", "wb")
+					outfile = open(srtbasefilename + "." + el.orig_filename.rsplit(".", 1)[1], "wb")
 					outfile.write(zf.read(el.orig_filename))
 					outfile.flush()
 					outfile.close()
@@ -71,13 +71,19 @@ class SubtitleDB(object):
 
 	def downloadFile(self, url, filename):
 		''' Downloads the given url to the given filename '''
-		logging.info("Downloading %s" %url)
-		f = urllib2.urlopen(url)
-		dump = open(filename, "wb")
-		dump.write(f.read())
-		dump.close()
-		f.close()
-		logging.debug("Download finished to file %s. Size : %s"%(filename,os.path.getsize(filename)))
+		try:
+			logging.info("Downloading %s" %url)
+			f = urllib2.urlopen(url)
+			dump = open(filename, "wb")
+			dump.write(f.read())
+			dump.close()
+			f.close()
+			logging.debug("Download finished to file %s. Size : %s"%(filename,os.path.getsize(filename)))
+		except urllib2.HTTPError, e:
+			print "HTTP Error:",e.code , url
+		except urllib2.URLError, e:
+			print "URL Error:",e.reason , url
+
 		
 	def getLG(self, language):
 		''' Returns the short (two-character) representation of the long language name'''

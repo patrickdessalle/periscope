@@ -40,7 +40,6 @@ class SubtitleSourceTestCase3(unittest.TestCase):
 		results = subdb.query("My.Name.is.Earl.S04E24.HDTV.XviD-LOL", ["en"])
 		assert len(results) > 0, "No result could be found for My.Name.is.Earl.S04E24.HDTV.XviD-LOL in any languages"
 '''
-
 class SubSceneTestCase(unittest.TestCase):
 	def runTest(self):
 		import SubScene
@@ -48,5 +47,26 @@ class SubSceneTestCase(unittest.TestCase):
 		results = subdb.query("Dexter.S04E01.HDTV.XviD-NoTV")
 		print results
 		assert len(results) > 0, "No result could be found for Dexter.S04E01.HDTV.XviD-NoTV and no languages"
+
+'''
+class PodnapisiTestCase(unittest.TestCase):
+	def runTest(self):
+		import Podnapisi
+		subdb = Podnapisi.Podnapisi()
+		results = subdb.process("The.Office.US.S06E01.HDTV.XviD-2HD", None)
+		print results
+		assert len(results) > 5, "Not enough result could be found for The.Office.US.S06E01.HDTV.XviD-2HD and no languages (expected 6)"
+		
+	
+
+class PodnapisiTestCaseTwoSerbian(unittest.TestCase):
+	def runTest(self):
+		import Podnapisi
+		subdb = Podnapisi.Podnapisi()
+		results = subdb.process("Twilight[2008]DvDrip-aXXo", None)
+		print results
+		assert len(results) > 0, "Not enough result could be found"
+'''		
+		
 if __name__ == "__main__":
 	unittest.main()

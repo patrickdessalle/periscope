@@ -18,5 +18,5 @@
 
 from OpenSubtitles import OpenSubtitles
 from SubtitleSource import SubtitleSource
-from Podnapisi import Podnapisi
+#from Podnapisi import Podnapisi
 from SubScene import SubScene

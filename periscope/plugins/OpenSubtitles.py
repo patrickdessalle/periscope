@@ -122,7 +122,8 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 		hash = filesize
 
 		if filesize < 2**16: 
-			raise invalidFileException(name, "SizeError < 2**16")
+			logging.error("File %s is too small (SizeError < 2**16)"%name)
+			return []
 
 		for x in range(65536/bytesize): 
 			buffer = f.read(bytesize) 
