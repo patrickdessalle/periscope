@@ -81,7 +81,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 	
 	def __init__(self):
 		super(OpenSubtitles, self).__init__(OS_LANGS)
-		self.server_url = 'http://www.opensubtitles.org/xml-rpc'
+		self.server_url = 'http://api.opensubtitles.org/xml-rpc'
 		self.revertlangs = dict(map(lambda item: (item[1],item[0]), self.langs.items()))
 
 	def process(self, filepath, langs):
