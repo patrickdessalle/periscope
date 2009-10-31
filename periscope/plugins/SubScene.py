@@ -43,7 +43,8 @@ SS_LANGUAGES = {"en": "English",
 				"ro" : "Romanian",
 				"tr" : "Turkish",
 				"pt-br" : "Brazillian Portuguese",
-				"ru" : "Russian"}
+				"ru" : "Russian",
+				"it" : "Italian"}
 
 class SubScene(SubtitleDatabase.SubtitleDB):
 	url = "http://subscene.com/"

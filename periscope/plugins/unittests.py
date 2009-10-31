@@ -3,14 +3,40 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-'''class OpenSubtitlesTestCase(unittest.TestCase):
+
+class RegexTestCase(unittest.TestCase):
+	def runTest(self):
+		import OpenSubtitles
+		subdb = OpenSubtitles.OpenSubtitles()
+		filenames = ('Dexter.S04E01.HDTV.XviD-NoTV', 'Night.Watch.2004.CD1.DVDRiP.XViD-FiCO' , 'Stargate.Universe.S01E06.HDTV.XviD-XII.avi', 'The.Office.US.S06E01.HDTV.XviD-2HD.[VTV]', 'Twilight[2008]DvDrip-aXXo', 'Heroes.S03E09.HDTV.XviD-LOL', 'Transformers.Revenge.of.the.Fallen.TS.XviD-DEViSE', 'My.Name.is.Earl.S04E24.HDTV.XviD-LOL', 'Wallace.And.Gromit.A.Matter.Of.Loaf.And.Death.HDTV.XviD-BiA', 'arw-spread.dvdrip-xvid', 'Rec.2.[Spanish].TS-Screener.XviD.[DTL]', 'X-Men Origins Wolverine [2009] dvd rip nlx', 'Saw VI (2009) TS DivXNL-Team', 'Michael Jackson This Is It 2009 CAM XVID-PrisM.NoRar.www.crazy-torrent.com', 'The.Goods.Live.Hard.Sell.Hard.2009.PROPER.DvDRiP.XviD-ExtraScene RG')
+		for filename in filenames:
+			print "%s => %s" %(filename, subdb.guessFileData(filename))
+	
+'''
+class OpenSubtitlesTestCase(unittest.TestCase):
 	def runTest(self):
 		import OpenSubtitles
 		subdb = OpenSubtitles.OpenSubtitles()
 		# movie hash if for night watch : http://trac.opensubtitles.org/projects/opensubtitles/wiki/XMLRPC
 		results = subdb.query('Night.Watch.2004.CD1.DVDRiP.XViD-FiCO.avi', moviehash="09a2c497663259cb", bytesize="733589504")
 		
-		assert len(results) > 0, 'No result found for the example moviehash'
+		assert len(results) > 0, 'No result found for Night.Watch.2004.CD1.DVDRiP.XViD-FiCO.avi by movie hash'
+
+class OpenSubtitlesTestCaseFileName(unittest.TestCase):
+	def runTest(self):
+		import OpenSubtitles
+		subdb = OpenSubtitles.OpenSubtitles()
+		# movie hash if for night watch : http://trac.opensubtitles.org/projects/opensubtitles/wiki/XMLRPC
+		#filename = 'Dexter.S04E01.HDTV.XviD-NoTV'
+		#filename = 'The.Office.US.S06E01.HDTV.XviD-2HD.[VTV]'
+		filename = "Twilight[2008]DvDrip-aXXo"
+		
+		results = subdb.query(filename)
+		
+		if results :
+			print "Found %s results" %len(results)
+			print results[0]
+		assert len(results) > 0, 'No result found for %s' %filename
 
 class SubtitleSourceTestCase(unittest.TestCase):
 	def runTest(self):
@@ -39,7 +65,7 @@ class SubtitleSourceTestCase3(unittest.TestCase):
 		subdb = Podnapisi.Podnapisi()
 		results = subdb.query("My.Name.is.Earl.S04E24.HDTV.XviD-LOL", ["en"])
 		assert len(results) > 0, "No result could be found for My.Name.is.Earl.S04E24.HDTV.XviD-LOL in any languages"
-'''
+
 class SubSceneTestCase(unittest.TestCase):
 	def runTest(self):
 		import SubScene
@@ -48,7 +74,7 @@ class SubSceneTestCase(unittest.TestCase):
 		print results
 		assert len(results) > 0, "No result could be found for Dexter.S04E01.HDTV.XviD-NoTV and no languages"
 
-'''
+
 class PodnapisiTestCase(unittest.TestCase):
 	def runTest(self):
 		import Podnapisi
@@ -66,7 +92,7 @@ class PodnapisiTestCaseTwoSerbian(unittest.TestCase):
 		results = subdb.process("Twilight[2008]DvDrip-aXXo", None)
 		print results
 		assert len(results) > 0, "Not enough result could be found"
-'''		
+'''
 		
 if __name__ == "__main__":
 	unittest.main()

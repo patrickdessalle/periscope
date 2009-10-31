@@ -17,12 +17,15 @@
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import os, shutil, urllib2, sys, logging, traceback, zipfile
+import re
 
 class SubtitleDB(object):
 	''' Base (kind of abstract) class that represent a SubtitleDB, usually a website. Should be rewritten using abc module in Python 2.6/3K'''
 	def __init__(self, langs):
 		self.langs = langs
 		self.revertlangs = dict(map(lambda item: (item[1],item[0]), self.langs.items()))
+		self.tvshowRegex = re.compile('(?P<show>.*)S(?P<season>[0-9]{2})E(?P<episode>[0-9]{2})(?P<teams>.*)', re.IGNORECASE)
+		self.movieRegex = re.compile('(?P<movie>.*)[\.|\[|\(| ]{1}(?P<year>(?:(?:19|20)[0-9]{2}))(?P<teams>.*)', re.IGNORECASE)
 
 	def searchInThread(self, queue, filename, langs):
 		''' search subtitles with the given filename for the given languages'''
@@ -101,6 +104,23 @@ class SubtitleDB(object):
 	
 	def query(self, token):
 		raise TypeError("%s has not implemented method '%s'" %(self.__class__.__name__, sys._getframe().f_code.co_name))
+		
+	def guessFileData(self, filename):
+		matches_tvshow = self.tvshowRegex.match(filename)
+		if matches_tvshow: # It looks like a tv show
+			(tvshow, season, episode, teams) = matches_tvshow.groups()
+			tvshow = tvshow.replace(".", " ").strip()
+			teams = teams.split('.')
+			return {'type' : 'tvshow', 'name' : tvshow.strip(), 'season' : season, 'episode' : episode, 'teams' : teams}
+		else:
+			matches_movie = self.movieRegex.match(filename)
+			if matches_movie:
+				(movie, year, teams) = matches_movie.groups()
+				teams = teams.split('.')
+				return {'type' : 'movie', 'name' : movie.strip(), 'year' : year, 'teams' : teams}
+			else:
+				return {'type' : 'unknown', 'name' : filename }
+		
 
 class InvalidFileException(Exception):
 	''' Exception object to be raised when the file is invalid'''

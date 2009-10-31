@@ -148,10 +148,25 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 	def query(self, filename, imdbID=None, moviehash=None, bytesize=None, langs=None):
 		''' Makes a query on opensubtitles and returns info about found subtitles.
 			Note: if using moviehash, bytesize is required.	'''
-		server = xmlrpclib.Server(self.server_url)
+			
+		#Prepare the search
+		search = {}
+		sublinks = []
+		if moviehash: search['moviehash'] = moviehash
+		if imdbID: search['imdbid'] = imdbID
+		if bytesize: search['moviebytesize'] = str(bytesize)
+		if langs: search['sublanguageid'] = ",".join([self.getLanguage(lang) for lang in langs])
+		if len(search) == 0:
+			logging.debug("No search term, we'll use the filename")
+			# Let's try to guess what to search:
+			guessed_data = self.guessFileData(filename)
+			search['query'] = guessed_data['name']
+			
+		#Login
+		self.server = xmlrpclib.Server(self.server_url)
 		socket.setdefaulttimeout(1)
 		try:
-			log_result = server.LogIn("","","eng","periscope")
+			log_result = self.server.LogIn("","","eng","periscope")
 			logging.debug(log_result)
 			token = log_result["token"]
 		except Exception:
@@ -161,28 +176,31 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 			return []
 		if not token:
 			logging.error("Open subtitles did not return a token after logging in.")
-			return []
-		search = {}
-		if moviehash: search['moviehash'] = moviehash
-		if imdbID: search['imdbid'] = imdbID
-		if bytesize: search['moviebytesize'] = str(bytesize)
-		if langs: search['sublanguageid'] = ",".join([self.getLanguage(lang) for lang in langs])
+			return []			
+			
+		# Search
+		self.filename = filename #Used to order the results
+		sublinks += self.get_results(token, search)
 
+		# Logout
+		self.server.LogOut(token)
+		socket.setdefaulttimeout(None)
+		return sublinks
+		
+		
+	def get_results(self, token, search):
 		logging.debug("query: token='%s', search='%s'" % (token, search))
 		try:
 			if search:
-				results = server.SearchSubtitles(token, [search])
-			else:
-				results = server.SearchSubtitles(token)
+				results = self.server.SearchSubtitles(token, [search])
 		except Exception, e:
 			logging.error("Could not query the server OpenSubtitles")
-			logging.debug(traceback)
+			logging.debug(e)
 			return []
 		logging.debug("Result: %s" %str(results))
 
 		sublinks = []
 		if results['data']:
-			self.filename = filename
 			# OpenSubtitles hash function is not robust ... We'll use the MovieReleaseName to help us select the best candidate
 			for r in sorted(results['data'], self.sort_by_moviereleasename):
 				# Only added if the MovieReleaseName matches the file
@@ -190,17 +208,24 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 				result["release"] = r['SubFileName']
 				result["link"] = r['SubDownloadLink']
 				result["lang"] = self.getLG(r['SubLanguageID'])
-				sublinks.append(result)
-		server.LogOut(token)
-		socket.setdefaulttimeout(None)
+				if search.has_key("query") : #We are using the guessed file name, let's remove some results
+					if r["MovieReleaseName"].startswith(self.filename):
+						sublinks.append(result)
+					else:
+						print "Removing %s" %result["release"]
+				else :
+					sublinks.append(result)
 		return sublinks
 
 	def sort_by_moviereleasename(self, x, y):
-		''' sorts based on the movierelease name tag'''
+		''' sorts based on the movierelease name tag. More matching, returns 1'''
+		#TODO add also support for subtitles release
 		xmatch = x['MovieReleaseName'] and (x['MovieReleaseName'].find(self.filename)>-1 or self.filename.find(x['MovieReleaseName'])>-1)
 		ymatch = y['MovieReleaseName'] and (y['MovieReleaseName'].find(self.filename)>-1 or self.filename.find(y['MovieReleaseName'])>-1)
-		
+		#print "analyzing %s and %s = %s and %s" %(x['MovieReleaseName'], y['MovieReleaseName'], xmatch, ymatch)
 		if xmatch and ymatch:
+			if x['MovieReleaseName'] == self.filename or x['MovieReleaseName'].startswith(self.filename) :
+				return -1
 			return 0
 		if not xmatch and not ymatch:
 			return 0

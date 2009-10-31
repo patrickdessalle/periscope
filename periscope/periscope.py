@@ -92,6 +92,9 @@ class Periscope:
 		'''Searches subtitles within the plugins and returns all found matching subtitles ordered by language then by plugin.'''
 		#if not os.path.isfile(filename):
 			#raise InvalidFileException(filename, "does not exist")
+		
+		if filename.endswith('.avi', '.wmv', '.mov', '.mp4', '.mpeg', '.mpg'):
+			filename = filename.rsplit('.', 1)[0]
 	
 		logging.info("Searching subtitles for %s with langs %s" %(filename, langs))
 		subtitles = []
@@ -136,11 +139,11 @@ class Periscope:
 	def downloadSubtitle(self, filename, langs=None):
 		''' Takes a filename and a language and creates ONE subtitle through plugins'''
 		subtitles = self.listSubtitles(filename, langs)
-		logging.info("All subtitles: ")
-		logging.info(subtitles)
+		logging.debug("All subtitles: ")
+		logging.debug(subtitles)
 		subtitle = self.selectBestSubtitle(subtitles, langs)
-		logging.info("Best subtitles: ")
-		logging.info(subtitle)
+		logging.debug("Best subtitles: ")
+		logging.debug(subtitle)
 		if subtitle:
 			#Download the subtitle
 			subpath = subtitle["plugin"].createFile(subtitle["link"], filename)

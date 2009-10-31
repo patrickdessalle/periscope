@@ -78,7 +78,8 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 		
 		soup = BeautifulSoup(page)
 		for subs in soup("tr", {"class":"a"}) + soup("tr", {"class": "b"}):
-			if token.lower() in subs.find("span", {"class" : "opis"}).find("span")["title"].lower().split(" "):
+			releases = subs.find("span", {"class" : "opis"}).find("span")["title"].lower().split(" ")
+			if token.lower() in releases:
 				logging.debug(subs)
 				links = subs.findAll("a")
 				lng = subs.find("a").find("img")["src"].rsplit("/", 1)[1][:-4]
@@ -88,7 +89,9 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 				dltag = subs.findAll("a")[2]["href"]
 				dllink = self.host + dltag
 				result = {}
-				result["release"] = subs.find("span", {"class" : "opis"}).find("span")["title"]
+				for rel in releases :
+					if rel == token.lower():
+						result["release"] = rel
 				result["link"] = dllink
 				result["lang"] = self.getLG(lng)
 				sublinks.append(result)
