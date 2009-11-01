@@ -34,27 +34,26 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 		self.host = "http://www.sub-titles.net/"
 		self.search = "ppodnapisi/search?"
 			
-	def process(self, filename, langs):
+	def process(self, filepath, langs):
 		''' main method to call on the plugin, pass the filename and the wished 
 		languages and it will query the subtitles source '''
-		if os.path.isfile(filename):
-			filename = os.path.basename(filename).rsplit(".", 1)[0]
+		fname = self.getFileName(filepath)
 		try:
 			subs = []
 			if langs:
 				for lang in langs:
 					#query one language at a time
-					subs_lang = self.query(filename, [lang])
+					subs_lang = self.query(fname, [lang])
 					if not subs_lang:
 						# Try to remove the [VTV] or [EZTV] at the end of the file
-						teamless_filename = filename[0 : filename.rfind(".[")]
+						teamless_filename = fname[0 : fname.rfind(".[")]
 						subs_lang = self.query(teamless_filename, langs)
 					subs += subs_lang
 			else:
-				subs_lang = self.query(filename, None)
+				subs_lang = self.query(fname, None)
 				if not subs_lang:
 					# Try to remove the [VTV] or [EZTV] at the end of the file
-					teamless_filename = filename[0 : filename.rfind(".[")]
+					teamless_filename = fname[0 : fname.rfind(".[")]
 					subs_lang = self.query(teamless_filename, None)
 				subs += subs_lang
 			return subs

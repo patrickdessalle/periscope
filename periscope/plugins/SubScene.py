@@ -57,7 +57,6 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 		
 	def downloadFile(self, url, filename):
 		''' Downloads the given url to the given filename '''
-		#req = urllib2.Request(url, headers={'User-Agent' : 'Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.1', 'Referer' : 'http://subscene.com', 'Accept' : '*/*', 'Connection': 'Keep-Alive', 'Accept-Encoding' : '*'})
 		req = urllib2.Request(url, headers={'Referer' : url, 'User-Agent' : 'Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.3)'})
 		
 		f = urllib2.urlopen(req)
@@ -70,19 +69,6 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 		f.close()
 		
 		#SubtitleDatabase.SubtitleDB.downloadFile(self, req, filename)
-			
-	def process(self, filename, langs):
-		''' main method to call on the plugin, pass the filename and the wished 
-		languages and it will query the subtitles source '''
-		if os.path.isfile(filename):
-			filename = os.path.basename(filename).rsplit(".", 1)[0]
-		try:
-			subs = self.query(filename, langs)
-			return subs
-		except Exception, e:
-			logging.error("Error raised by plugin %s: %s" %(self.__class__.__name__, e))
-			traceback.print_exc()
-			return []
 	
 	def query(self, token, langs=None):
 		''' makes a query on subscene and returns info (link, lang) about found subtitles'''

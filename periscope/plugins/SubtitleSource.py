@@ -41,16 +41,15 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 
 		self.host = "http://www.subtitlesource.org/api/xmlsearch"
 			
-	def process(self, filename, langs):
+	def process(self, filepath, langs):
 		''' main method to call on the plugin, pass the filename and the wished 
 		languages and it will query the subtitles source '''
-		if os.path.isfile(filename):
-			filename = os.path.basename(filename).rsplit(".", 1)[0]
+		fname = self.getFileName(filepath)
 		try:
-			subs = self.query(filename, langs)
-			if not subs and filename.rfind(".[") > 0:
+			subs = self.query(fname, langs)
+			if not subs and fname.rfind(".[") > 0:
 				# Try to remove the [VTV] or [EZTV] at the end of the file
-				teamless_filename = filename[0 : filename.rfind(".[")]
+				teamless_filename = fname[0 : fname.rfind(".[")]
 				subs = self.query(teamless_filename, langs)
 				return subs
 			else:

@@ -92,9 +92,6 @@ class Periscope:
 		'''Searches subtitles within the plugins and returns all found matching subtitles ordered by language then by plugin.'''
 		#if not os.path.isfile(filename):
 			#raise InvalidFileException(filename, "does not exist")
-		
-		if filename.endswith('.avi', '.wmv', '.mov', '.mp4', '.mpeg', '.mpg'):
-			filename = filename.rsplit('.', 1)[0]
 	
 		logging.info("Searching subtitles for %s with langs %s" %(filename, langs))
 		subtitles = []

@@ -35,13 +35,12 @@ class SubtitleDB(object):
 		logging.info("%s writing %s items to queue" % (self.__class__.__name__, len(subs)))
 		queue.put(subs, True) # Each plugin must write as the caller periscopy.py waits for an result on the queue
 	
-	def process(self, filename, langs):
+	def process(self, filepath, langs):
 		''' main method to call on the plugin, pass the filename and the wished 
 		languages and it will query the subtitles source '''
-		if os.path.isfile(filename):
-			filename = os.path.basename(filename).rsplit(".", 1)[0]
+		fname = self.getFileName(filepath)
 		try:
-			return self.query(filename, langs)
+			return self.query(fname, langs)
 		except Exception, e:
 			logging.error("Error raised by plugin %s: %s" %(self.__class__.__name__, e))
 			traceback.print_exc()
@@ -104,6 +103,17 @@ class SubtitleDB(object):
 	
 	def query(self, token):
 		raise TypeError("%s has not implemented method '%s'" %(self.__class__.__name__, sys._getframe().f_code.co_name))
+		
+	def getFileName(self, filepath):
+		if os.path.isfile(filepath):
+			filename = os.path.basename(filepath)
+		else:
+			filename = filepath
+		if filename.endswith(('.avi', '.wmv', '.mov', '.mp4', '.mpeg', '.mpg')):
+			fname = filename.rsplit('.', 1)[0]
+		else:
+			fname = filename
+		return fname
 		
 	def guessFileData(self, filename):
 		matches_tvshow = self.tvshowRegex.match(filename)
