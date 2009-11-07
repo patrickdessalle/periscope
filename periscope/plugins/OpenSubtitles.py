@@ -36,7 +36,6 @@ OS_LANGS ={ "en": "eng",
 			"hy":"arm",
 			"ay":"ass",
 			"bs":"bos",
-			"pb":"pob",
 			"bg":"bul",
 			"ca":"cat",
 			"zh":"chi",
@@ -213,7 +212,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 					if r["MovieReleaseName"].startswith(self.filename):
 						sublinks.append(result)
 					else:
-						print "Removing %s" %result["release"]
+						logging.debug("Removing %s" %result["release"])
 				else :
 					sublinks.append(result)
 		return sublinks

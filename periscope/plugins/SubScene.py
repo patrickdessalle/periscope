@@ -38,10 +38,12 @@ SS_LANGUAGES = {"en": "English",
 				"nl" : "Dutch",
 				"he" : "Hebrew",
 				"id" : "Indonesian",
+				"ja" : "Japanese",
 				"vi" : "Vietnamese",
 				"pt" : "Portuguese",
 				"ro" : "Romanian",
 				"tr" : "Turkish",
+				"sr" : "Serbian",
 				"pt-br" : "Brazillian Portuguese",
 				"ru" : "Russian",
 				"it" : "Italian"}
@@ -54,7 +56,25 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 		super(SubScene, self).__init__(SS_LANGUAGES)
 		#http://subscene.com/s.aspx?q=Dexter.S04E01.HDTV.XviD-NoTV
 		self.host = "http://subscene.com/s.aspx?q="
-		
+
+	def process(self, filepath, langs):
+		''' main method to call on the plugin, pass the filename and the wished 
+		languages and it will query the subtitles source '''
+		fname = self.getFileName(filepath)
+		try:
+			subs = self.query(fname, langs)
+			if not subs and fname.rfind(".[") > 0:
+				# Try to remove the [VTV] or [EZTV] at the end of the file
+				teamless_filename = fname[0 : fname.rfind(".[")]
+				subs = self.query(teamless_filename, langs)
+				return subs
+			else:
+				return subs
+		except Exception, e:
+			logging.error("Error raised by plugin %s: %s" %(self.__class__.__name__, e))
+			traceback.print_exc()
+			return []
+
 	def downloadFile(self, url, filename):
 		''' Downloads the given url to the given filename '''
 		req = urllib2.Request(url, headers={'Referer' : url, 'User-Agent' : 'Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.3)'})

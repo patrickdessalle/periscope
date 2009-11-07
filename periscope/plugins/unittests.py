@@ -3,7 +3,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-
+'''
 class RegexTestCase(unittest.TestCase):
 	def runTest(self):
 		import OpenSubtitles
@@ -12,7 +12,6 @@ class RegexTestCase(unittest.TestCase):
 		for filename in filenames:
 			print "%s => %s" %(filename, subdb.guessFileData(filename))
 	
-'''
 class OpenSubtitlesTestCase(unittest.TestCase):
 	def runTest(self):
 		import OpenSubtitles
@@ -75,16 +74,25 @@ class SubSceneTestCase(unittest.TestCase):
 		assert len(results) > 0, "No result could be found for Dexter.S04E01.HDTV.XviD-NoTV and no languages"
 
 
+class Podnapisi2TestCase(unittest.TestCase):
+	def runTest(self):
+		import Podnapisi2
+		subdb = Podnapisi2.Podnapisi()
+		results = subdb.process("/burn/Bored.to.Death.S01E01.HDTV.XviD-NoTV.avi", None)
+		print results
+		assert len(results) > 5, "Not enough result could be found for The.Office.US.S06E01.HDTV.XviD-2HD and no languages (expected 6)"
+'''
+
 class PodnapisiTestCase(unittest.TestCase):
 	def runTest(self):
 		import Podnapisi
 		subdb = Podnapisi.Podnapisi()
-		results = subdb.process("The.Office.US.S06E01.HDTV.XviD-2HD", None)
+		results = subdb.process("/burn/Community.S01E01.Pilot.HDTV.XviD-FQM.avi", None)
 		print results
-		assert len(results) > 5, "Not enough result could be found for The.Office.US.S06E01.HDTV.XviD-2HD and no languages (expected 6)"
+		assert len(results) > 5, "Not enough result could be found for Community.S01E01.Pilot.HDTV.XviD-FQM.avi and no languages (expected 6)"
 		
 	
-
+'''
 class PodnapisiTestCaseTwoSerbian(unittest.TestCase):
 	def runTest(self):
 		import Podnapisi

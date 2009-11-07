@@ -31,7 +31,7 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 		#Note: Podnapisi uses two reference for latin serbian and cyrillic serbian (36 and 47). We'll add the 36 manually as cyrillic seems to be more used
 		self.revertlangs["36"] = "sr";
 
-		self.host = "http://www.sub-titles.net/"
+		self.host = "http://simple.podnapisi.net/"
 		self.search = "ppodnapisi/search?"
 			
 	def process(self, filepath, langs):
@@ -74,8 +74,10 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 		searchurl = self.host + self.search + urllib.urlencode(params)
 		logging.debug("dl'ing %s" %searchurl)
 		page = urllib2.urlopen(searchurl)
-		
-		soup = BeautifulSoup(page)
+		content = page.read()
+		# Workaround for the Beautifulsoup 3.1 bug
+		content = content.replace("scr'+'ipt", "script")
+		soup = BeautifulSoup(content)
 		for subs in soup("tr", {"class":"a"}) + soup("tr", {"class": "b"}):
 			releases = subs.find("span", {"class" : "opis"}).find("span")["title"].lower().split(" ")
 			if token.lower() in releases:
