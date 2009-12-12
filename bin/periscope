@@ -49,6 +49,7 @@ def main():
 	for arg in args:
 		videos += recursive_search(arg)
 
+	subs = []
 	for arg in videos:
 		periscope_client = periscope.Periscope()
 		if not options.langs: #Look into the config
@@ -56,7 +57,14 @@ def main():
 			langs = periscope_client.preferedLanguages
 		else:
 			langs = options.langs
-		sub = periscope_client.downloadSubtitle(arg, langs)
+		subs.append(periscope_client.downloadSubtitle(arg, langs))
+	
+	logging.info("*"*50)
+	logging.info("Downloaded %s subtitles" %len(subs))
+	for s in subs:
+		logging.info(s['lang'] + " - " + s['subtitlepath'])
+	logging.info("*"*50)
+
 
 def recursive_search(entry):
 	'''searches files in the dir'''
