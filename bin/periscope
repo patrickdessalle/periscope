@@ -57,7 +57,9 @@ def main():
 			langs = periscope_client.preferedLanguages
 		else:
 			langs = options.langs
-		subs.append(periscope_client.downloadSubtitle(arg, langs))
+		sub = periscope_client.downloadSubtitle(arg, langs)
+		if sub:
+			subs.append(sub)
 	
 	logging.info("*"*50)
 	logging.info("Downloaded %s subtitles" %len(subs))

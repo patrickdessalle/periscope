@@ -103,7 +103,17 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 			os.remove(archivefilename)
 			return srtbasefilename + ".srt"
 		elif archivefilename.endswith('.rar'):
-			logging.error('Rar is not supported yet')
+			logging.warn('Rar is not really supported yet. Trying to call unrar')
+			import subprocess
+			try :
+				retcode = subprocess.call("unrar %s" %archivefilename, shell=True)
+			    if retcode < 0:
+			        log.error("Child was terminated by signal %s" %retcode)
+			    else:
+			        log.error("Child returned %s" %retcode)
+			except OSError, e:
+			    log.error("Execution failed: %s" %e)
+			
 		else:
 			logging.info("Unexpected file type (not zip) for %s" %archivefilename)
 
@@ -117,7 +127,7 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 			f.read(1000000)
 		except httplib.IncompleteRead, e:
 			dump.write(e.partial)
-			logging.error('Incomplete read for %s ...' %url)
+			logging.warn('Incomplete read for %s ... Trying anyway to decompress.' %url)
 		dump.close()
 		f.close()
 		

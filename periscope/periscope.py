@@ -137,16 +137,32 @@ class Periscope:
 	def downloadSubtitle(self, filename, langs=None):
 		''' Takes a filename and a language and creates ONE subtitle through plugins'''
 		subtitles = self.listSubtitles(filename, langs)
-		logging.debug("All subtitles: ")
-		logging.debug(subtitles)
+		if subtitles:
+			logging.debug("All subtitles: ")
+			logging.debug(subtitles)	
+			return attemptDownloadSubtitle(subtitles, langs)
+		else:
+			return []
+		
+		
+	def attemptDownloadSubtitle(self, subtitles, langs):
 		subtitle = self.selectBestSubtitle(subtitles, langs)
-		logging.debug("Best subtitles: ")
-		logging.debug(subtitle)
 		if subtitle:
+			logging.debug("Trying to download subtitle: ")
+			logging.debug(subtitle)
 			#Download the subtitle
-			subpath = subtitle["plugin"].createFile(subtitle["link"], filename)
-			subtitle["subtitlepath"] = subpath
-			return subtitle
+			try:
+				subpath = subtitle["plugin"].createFile(subtitle["link"], filename)			
+				subtitle["subtitlepath"] = subpath
+				return subtitle
+			except :
+				# Could not download that subtitle, remove it
+				logging.info("Subtitle %s could not be downloaded, trying the next on the list" %subtitle['link'])
+				subtitles = subtitles - subtitle
+				self.attemptDownloadSubtitle(subtitles, langs)
+		else :
+			logging.error("No subtitles could be chosen.")
+			return Exception("No subtitle was chosen from the list of subtitles")
 		
 		
 	def __orderSubtitles__(self, subs):
