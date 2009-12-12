@@ -2,16 +2,15 @@ import unittest
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
-
 '''
 class RegexTestCase(unittest.TestCase):
 	def runTest(self):
 		import OpenSubtitles
 		subdb = OpenSubtitles.OpenSubtitles()
-		filenames = ('Dexter.S04E01.HDTV.XviD-NoTV', 'Night.Watch.2004.CD1.DVDRiP.XViD-FiCO' , 'Stargate.Universe.S01E06.HDTV.XviD-XII.avi', 'The.Office.US.S06E01.HDTV.XviD-2HD.[VTV]', 'Twilight[2008]DvDrip-aXXo', 'Heroes.S03E09.HDTV.XviD-LOL', 'Transformers.Revenge.of.the.Fallen.TS.XviD-DEViSE', 'My.Name.is.Earl.S04E24.HDTV.XviD-LOL', 'Wallace.And.Gromit.A.Matter.Of.Loaf.And.Death.HDTV.XviD-BiA', 'arw-spread.dvdrip-xvid', 'Rec.2.[Spanish].TS-Screener.XviD.[DTL]', 'X-Men Origins Wolverine [2009] dvd rip nlx', 'Saw VI (2009) TS DivXNL-Team', 'Michael Jackson This Is It 2009 CAM XVID-PrisM.NoRar.www.crazy-torrent.com', 'The.Goods.Live.Hard.Sell.Hard.2009.PROPER.DvDRiP.XviD-ExtraScene RG')
+		filenames = ('Marley & Me.2008-L33t-DvDRiP.DivX.NoRaR', 'Dexter.S04E01.HDTV.XviD-NoTV', 'Night.Watch.2004.CD1.DVDRiP.XViD-FiCO' , 'Stargate.Universe.S01E06.HDTV.XviD-XII.avi', 'The.Office.US.S06E01.HDTV.XviD-2HD.[VTV]', 'Twilight[2008]DvDrip-aXXo', 'Heroes.S03E09.HDTV.XviD-LOL', 'Transformers.Revenge.of.the.Fallen.TS.XviD-DEViSE', 'My.Name.is.Earl.S04E24.HDTV.XviD-LOL', 'Wallace.And.Gromit.A.Matter.Of.Loaf.And.Death.HDTV.XviD-BiA', 'arw-spread.dvdrip-xvid', 'Rec.2.[Spanish].TS-Screener.XviD.[DTL]', 'X-Men Origins Wolverine [2009] dvd rip nlx', 'Saw VI (2009) TS DivXNL-Team', 'Michael Jackson This Is It 2009 CAM XVID-PrisM.NoRar.www.crazy-torrent.com', 'The.Goods.Live.Hard.Sell.Hard.2009.PROPER.DvDRiP.XviD-ExtraScene RG')
 		for filename in filenames:
 			print "%s => %s" %(filename, subdb.guessFileData(filename))
-	
+
 class OpenSubtitlesTestCase(unittest.TestCase):
 	def runTest(self):
 		import OpenSubtitles
@@ -20,6 +19,7 @@ class OpenSubtitlesTestCase(unittest.TestCase):
 		results = subdb.query('Night.Watch.2004.CD1.DVDRiP.XViD-FiCO.avi', moviehash="09a2c497663259cb", bytesize="733589504")
 		
 		assert len(results) > 0, 'No result found for Night.Watch.2004.CD1.DVDRiP.XViD-FiCO.avi by movie hash'
+'''
 
 class OpenSubtitlesTestCaseFileName(unittest.TestCase):
 	def runTest(self):
@@ -28,15 +28,17 @@ class OpenSubtitlesTestCaseFileName(unittest.TestCase):
 		# movie hash if for night watch : http://trac.opensubtitles.org/projects/opensubtitles/wiki/XMLRPC
 		#filename = 'Dexter.S04E01.HDTV.XviD-NoTV'
 		#filename = 'The.Office.US.S06E01.HDTV.XviD-2HD.[VTV]'
-		filename = "Twilight[2008]DvDrip-aXXo"
+		filenames = ['Marley & Me.2008-L33t-DvDRiP.DivX.NoRaR']
+		#filenames.append("Twilight[2008]DvDrip-aXXo")
 		
-		results = subdb.query(filename)
+		for filename in filenames:
+			results = subdb.query(filename)
 		
-		if results :
-			print "Found %s results" %len(results)
-			print results[0]
-		assert len(results) > 0, 'No result found for %s' %filename
-
+			if results :
+				print "Found %s results" %len(results)
+				print results[0]
+			assert len(results) > 0, 'No result found for %s' %filename
+'''
 class SubtitleSourceTestCase(unittest.TestCase):
 	def runTest(self):
 		import SubtitleSource
@@ -81,7 +83,7 @@ class Podnapisi2TestCase(unittest.TestCase):
 		results = subdb.process("/burn/Bored.to.Death.S01E01.HDTV.XviD-NoTV.avi", None)
 		print results
 		assert len(results) > 5, "Not enough result could be found for The.Office.US.S06E01.HDTV.XviD-2HD and no languages (expected 6)"
-'''
+
 
 class PodnapisiTestCase(unittest.TestCase):
 	def runTest(self):
@@ -92,7 +94,7 @@ class PodnapisiTestCase(unittest.TestCase):
 		assert len(results) > 5, "Not enough result could be found for Community.S01E01.Pilot.HDTV.XviD-FQM.avi and no languages (expected 6)"
 		
 	
-'''
+
 class PodnapisiTestCaseTwoSerbian(unittest.TestCase):
 	def runTest(self):
 		import Podnapisi

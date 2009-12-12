@@ -161,16 +161,17 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 			# Let's try to guess what to search:
 			guessed_data = self.guessFileData(filename)
 			search['query'] = guessed_data['name']
+			logging.debug(search['query'])
 			
 		#Login
 		self.server = xmlrpclib.Server(self.server_url)
-		socket.setdefaulttimeout(1)
+		socket.setdefaulttimeout(10)
 		try:
 			log_result = self.server.LogIn("","","eng","periscope")
 			logging.debug(log_result)
 			token = log_result["token"]
 		except Exception:
-			logging.error("Open subtitles could not be contacted")
+			logging.error("Open subtitles could not be contacted for login")
 			token = None
 			socket.setdefaulttimeout(None)
 			return []
@@ -183,7 +184,10 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 		sublinks += self.get_results(token, search)
 
 		# Logout
-		self.server.LogOut(token)
+		try:
+			self.server.LogOut(token)
+		except:
+			logging.error("Open subtitles could not be contacted for logout")
 		socket.setdefaulttimeout(None)
 		return sublinks
 		
@@ -207,6 +211,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 				result = {}
 				result["release"] = r['SubFileName']
 				result["link"] = r['SubDownloadLink']
+				result["page"] = r['SubDownloadLink']
 				result["lang"] = self.getLG(r['SubLanguageID'])
 				if search.has_key("query") : #We are using the guessed file name, let's remove some results
 					if r["MovieReleaseName"].startswith(self.filename):

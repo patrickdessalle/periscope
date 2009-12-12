@@ -94,6 +94,7 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 					if rel == token.lower():
 						result["release"] = rel
 				result["link"] = dllink
+				result["page"] = dllink
 				result["lang"] = self.getLG(lng)
 				sublinks.append(result)
 

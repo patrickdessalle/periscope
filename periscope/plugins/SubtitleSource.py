@@ -84,8 +84,10 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 				result = {}
 				result["release"] = self.getValue(sub, "releasename")
 				result["link"] = dllink
+				result["page"] = dllink
 				result["lang"] = sublang
-				sublinks.append(result)
+				if result['release'].startswith(token):
+					sublinks.append(result)
 		return sublinks
 
 	def getValue(self, sub, tagName):

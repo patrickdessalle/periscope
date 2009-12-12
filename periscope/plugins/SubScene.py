@@ -46,7 +46,11 @@ SS_LANGUAGES = {"en": "English",
 				"sr" : "Serbian",
 				"pt-br" : "Brazillian Portuguese",
 				"ru" : "Russian",
-				"it" : "Italian"}
+				"hr" : "Croatian",
+				"sl" : "Slovenian",
+				"zh" : "Chinese BG code",
+				"it" : "Italian",
+				"pl" : "Polish"}
 
 class SubScene(SubtitleDatabase.SubtitleDB):
 	url = "http://subscene.com/"
@@ -74,6 +78,34 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 			logging.error("Error raised by plugin %s: %s" %(self.__class__.__name__, e))
 			traceback.print_exc()
 			return []
+			
+	def createFile(self, suburl, videofilename):
+		'''pass the URL of the sub and the file it matches, will unzip it
+		and return the path to the created file'''
+		srtbasefilename = videofilename.rsplit(".", 1)[0]
+		format = urllib2.urlparse.urlsplit(suburl)[2].rsplit('/', 1)[1].split('.')[0]
+		archivefilename = srtbasefilename + '.'+ format
+		self.downloadFile(suburl, archivefilename)
+		
+		if zipfile.is_zipfile(archivefilename):
+			logging.debug("Unzipping file " + archivefilename)
+			zf = zipfile.ZipFile(archivefilename, "r")
+			for el in zf.infolist():
+				if el.orig_filename.rsplit(".", 1)[1] in ("srt", "sub", "txt"):
+					outfile = open(srtbasefilename + "." + el.orig_filename.rsplit(".", 1)[1], "wb")
+					outfile.write(zf.read(el.orig_filename))
+					outfile.flush()
+					outfile.close()
+				else:
+					logging.info("File %s does not seem to be valid " %el.orig_filename)
+			# Deleting the zip file
+			zf.close()
+			os.remove(archivefilename)
+			return srtbasefilename + ".srt"
+		elif archivefilename.endswith('.rar'):
+			logging.error('Rar is not supported yet')
+		else:
+			logging.info("Unexpected file type (not zip) for %s" %archivefilename)
 
 	def downloadFile(self, url, filename):
 		''' Downloads the given url to the given filename '''
@@ -85,6 +117,7 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 			f.read(1000000)
 		except httplib.IncompleteRead, e:
 			dump.write(e.partial)
+			logging.error('Incomplete read for %s ...' %url)
 		dump.close()
 		f.close()
 		
