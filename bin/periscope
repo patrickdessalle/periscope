@@ -28,7 +28,7 @@ SUPPORTED_FORMATS = 'video/x-msvideo', 'video/quicktime', 'video/x-matroska', 'v
 def main():
 	'''Download subtitles'''
 	# parse command line options
-	parser = OptionParser("usage: %prog [options] file1 file2")
+	parser = OptionParser("usage: %prog [options] file1 file2", version = periscope.VERSION)
 	parser.add_option("-l", "--language", action="append", dest="langs", help="wanted language (ISO 639-1 two chars) for the subtitles (fr, en, ja, ...). If none is specified will download a subtitle in any language. This option can be used multiple times like %prog -l fr -l en file1 will try to download in french and then in english if no french subtitles are found.")
 	parser.add_option("-q", "--query", action="append", dest="queries", help="query to send to the subtitles website")
 	parser.add_option("--debug", action="store_true", dest="debug", help="set the logging level to debug")
