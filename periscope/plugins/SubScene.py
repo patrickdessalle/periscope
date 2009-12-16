@@ -107,10 +107,10 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 			import subprocess
 			try :
 				retcode = subprocess.call("unrar %s" %archivefilename, shell=True)
-			    if retcode < 0:
-			        log.error("Child was terminated by signal %s" %retcode)
-			    else:
-			        log.error("Child returned %s" %retcode)
+				if retcode < 0:
+					log.error("Child was terminated by signal %s" %retcode)
+				else:
+					log.error("Child returned %s" %retcode)
 			except OSError, e:
 			    log.error("Execution failed: %s" %e)
 			
