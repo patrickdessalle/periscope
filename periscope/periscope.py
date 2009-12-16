@@ -142,7 +142,7 @@ class Periscope:
 			logging.debug(subtitles)	
 			return attemptDownloadSubtitle(subtitles, langs)
 		else:
-			return []
+			return None
 		
 		
 	def attemptDownloadSubtitle(self, subtitles, langs):
