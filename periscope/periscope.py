@@ -36,7 +36,7 @@ except ImportError:
 import plugins
 
 SUPPORTED_FORMATS = 'video/x-msvideo', 'video/quicktime', 'video/x-matroska', 'video/mp4'
-VERSION = "0.1.6"
+VERSION = "0.1.7"
 
 class Periscope:
 	''' Main Periscope class'''
