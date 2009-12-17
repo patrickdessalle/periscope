@@ -140,7 +140,7 @@ class Periscope:
 		if subtitles:
 			logging.debug("All subtitles: ")
 			logging.debug(subtitles)	
-			return attemptDownloadSubtitle(subtitles, langs)
+			return self.attemptDownloadSubtitle(subtitles, langs)
 		else:
 			return None
 		
@@ -148,17 +148,17 @@ class Periscope:
 	def attemptDownloadSubtitle(self, subtitles, langs):
 		subtitle = self.selectBestSubtitle(subtitles, langs)
 		if subtitle:
-			logging.debug("Trying to download subtitle: ")
-			logging.debug(subtitle)
+			logging.debug("Trying to download subtitle: %s" %subtitle['link'])
 			#Download the subtitle
 			try:
-				subpath = subtitle["plugin"].createFile(subtitle["link"], filename)			
+				subpath = subtitle["plugin"].createFile(subtitle["link"], subtitle["filename"])			
 				subtitle["subtitlepath"] = subpath
 				return subtitle
-			except :
+			except Exception as inst:
 				# Could not download that subtitle, remove it
-				logging.info("Subtitle %s could not be downloaded, trying the next on the list" %subtitle['link'])
-				subtitles = subtitles - subtitle
+				logging.warn("Subtitle %s could not be downloaded, trying the next on the list" %subtitle['link'])
+				logging.error(inst)
+				subtitles.remove(subtitle)
 				self.attemptDownloadSubtitle(subtitles, langs)
 		else :
 			logging.error("No subtitles could be chosen.")
