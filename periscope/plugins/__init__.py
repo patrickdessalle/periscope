@@ -20,3 +20,4 @@ from OpenSubtitles import OpenSubtitles
 from SubtitleSource import SubtitleSource
 from Podnapisi import Podnapisi
 from SubScene import SubScene
+from Subtitulos import Subtitulos

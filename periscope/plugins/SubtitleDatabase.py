@@ -21,10 +21,15 @@ import re
 
 class SubtitleDB(object):
 	''' Base (kind of abstract) class that represent a SubtitleDB, usually a website. Should be rewritten using abc module in Python 2.6/3K'''
-	def __init__(self, langs):
-		self.langs = langs
-		self.revertlangs = dict(map(lambda item: (item[1],item[0]), self.langs.items()))
+	def __init__(self, langs, revertlangs = None):
+		if langs:
+			self.langs = langs
+			self.revertlangs = dict(map(lambda item: (item[1],item[0]), self.langs.items()))
+		if revertlangs:
+			self.revertlangs = revertlangs
+			self.langs = dict(map(lambda item: (item[1],item[0]), self.revertlangs.items()))
 		self.tvshowRegex = re.compile('(?P<show>.*)S(?P<season>[0-9]{2})E(?P<episode>[0-9]{2})(?P<teams>.*)', re.IGNORECASE)
+		self.tvshowRegex2 = re.compile('(?P<show>.*).(?P<season>[0-9]{2})x(?P<episode>[0-9]{2}).(?P<teams>.*)', re.IGNORECASE)
 		self.movieRegex = re.compile('(?P<movie>.*)[\.|\[|\(| ]{1}(?P<year>(?:(?:19|20)[0-9]{2}))(?P<teams>.*)', re.IGNORECASE)
 
 	def searchInThread(self, queue, filename, langs):
@@ -123,13 +128,20 @@ class SubtitleDB(object):
 			teams = teams.split('.')
 			return {'type' : 'tvshow', 'name' : tvshow.strip(), 'season' : season, 'episode' : episode, 'teams' : teams}
 		else:
-			matches_movie = self.movieRegex.match(filename)
-			if matches_movie:
-				(movie, year, teams) = matches_movie.groups()
+			matches_tvshow = self.tvshowRegex2.match(filename)
+			if matches_tvshow:
+				(tvshow, season, episode, teams) = matches_tvshow.groups()
+				tvshow = tvshow.replace(".", " ").strip()
 				teams = teams.split('.')
-				return {'type' : 'movie', 'name' : movie.strip(), 'year' : year, 'teams' : teams}
+				return {'type' : 'tvshow', 'name' : tvshow.strip(), 'season' : season, 'episode' : episode, 'teams' : teams}
 			else:
-				return {'type' : 'unknown', 'name' : filename }
+				matches_movie = self.movieRegex.match(filename)
+				if matches_movie:
+					(movie, year, teams) = matches_movie.groups()
+					teams = teams.split('.')
+					return {'type' : 'movie', 'name' : movie.strip(), 'year' : year, 'teams' : teams}
+				else:
+					return {'type' : 'unknown', 'name' : filename }
 		
 
 class InvalidFileException(Exception):
