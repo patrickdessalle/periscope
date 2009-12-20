@@ -24,12 +24,17 @@ import SubtitleDatabase
 LANGUAGES = {u"English (US)" : "en",
 			 u"English (UK)" : "en",
 			 u"English" : "en",
+			 u"French" : "fr",
+			 u"Brazilian" : "pt-br",
+			 u"Portuguese" : "pt",
+			 u"Español (Latinoamérica)" : "es",
 			 u"Español (España)" : "es",
-			 u"French" : "fr"}
+			 u"Español" : "es",
+			 u"Italian" : "it"}
 
 class Subtitulos(SubtitleDatabase.SubtitleDB):
-	url = "http://subtitlos.es/"
-	site_name = "Subtitulos.es"
+	url = "http://www.subtitulos.es"
+	site_name = "Subtitulos"
 
 	def __init__(self):
 		super(Subtitulos, self).__init__(langs=None,revertlangs=LANGUAGES)
@@ -43,7 +48,6 @@ class Subtitulos(SubtitleDatabase.SubtitleDB):
 		languages and it will query the subtitles source '''
 		fname = self.getFileName(filepath)
 		guessedData = self.guessFileData(fname)
-		print guessedData
 		if guessedData['type'] == 'tvshow':
 			subs = self.query(guessedData['name'], guessedData['season'], guessedData['episode'], guessedData['teams'], langs)
 			return subs
@@ -64,17 +68,15 @@ class Subtitulos(SubtitleDatabase.SubtitleDB):
 		
 		soup = BeautifulSoup(page)
 		for subs in soup("td", {"class":"NewsTitle"}):
-			print "Got one ..."
 			subteams = self.release_pattern.match("%s"%subs.contents[1]).groups()[0]
-			langs = subs.findNext("td", {"class" : "language"})
-			lang = self.getLG(langs.string.strip())
+			langs_html = subs.findNext("td", {"class" : "language"})
+			lang = self.getLG(langs_html.string.strip())
 		
-			statusTD = langs.findNext("td")
+			statusTD = langs_html.findNext("td")
 			status = statusTD.find("strong").string.strip()
 
 			link = statusTD.findNext("td").find("a")["href"]
-							
-			if status == "Completado" and set(subteams.split(".")).issubset(set(teams)):				
+			if status == "Completado" and set(subteams.split(".")).issubset(set(teams)) and (not langs or lang in langs) :
 				result = {}
 				result["release"] = "%s.S%.2dE%.2d.%s" %(name.replace("-", "."), int(season), int(episode), subteams)
 				result["lang"] = lang
