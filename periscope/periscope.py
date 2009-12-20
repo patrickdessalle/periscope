@@ -54,11 +54,15 @@ class Periscope:
 				configfile = open(self.config_file, "w")
 				self.config.write(configfile)
 				configfile.close()
+			else:
+				#Load it
+				self.config.read(self.config_file)
 
 		self.pluginNames = self.listExistingPlugins()
 		self._preferedLanguages = None
 
 	def get_preferedLanguages(self):
+		print self.config
 		lang = self.config.get("DEFAULT", "lang")
 		logging.info("lang read from config: " + lang)
 		if lang == "":
