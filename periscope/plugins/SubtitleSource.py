@@ -66,7 +66,7 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 		if not langs: # langs is empty of None
 			languages = ["all"]
 		else: # parse each lang to generate the equivalent lang
-			languages = [SS_LANGUAGES[l] for l in langs]
+			languages = [SS_LANGUAGES[l] for l in langs if l in SS_LANGUAGES.keys()]
 							
 		for lang in languages:
 			searchurl = "%s/%s/%s/0" %(self.host, urllib.quote(token), lang)
