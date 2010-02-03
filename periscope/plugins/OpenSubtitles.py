@@ -205,6 +205,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 
 		sublinks = []
 		if results['data']:
+			logging.debug(results['data'])
 			# OpenSubtitles hash function is not robust ... We'll use the MovieReleaseName to help us select the best candidate
 			for r in sorted(results['data'], self.sort_by_moviereleasename):
 				# Only added if the MovieReleaseName matches the file
@@ -217,7 +218,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 					if r["MovieReleaseName"].startswith(self.filename):
 						sublinks.append(result)
 					else:
-						logging.debug("Removing %s" %result["release"])
+						logging.debug("Removing %s because release '%s' has not right start %s" %(result["release"], r["MovieReleaseName"], self.filename))
 				else :
 					sublinks.append(result)
 		return sublinks

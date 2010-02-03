@@ -46,7 +46,7 @@ class Subtitulos(SubtitleDatabase.SubtitleDB):
 	def process(self, filepath, langs):
 		''' main method to call on the plugin, pass the filename and the wished 
 		languages and it will query the subtitles source '''
-		fname = self.getFileName(filepath)
+		fname = unicode(self.getFileName(filepath).lower())
 		guessedData = self.guessFileData(fname)
 		if guessedData['type'] == 'tvshow':
 			subs = self.query(guessedData['name'], guessedData['season'], guessedData['episode'], guessedData['teams'], langs)
@@ -68,15 +68,25 @@ class Subtitulos(SubtitleDatabase.SubtitleDB):
 		
 		soup = BeautifulSoup(page)
 		for subs in soup("td", {"class":"NewsTitle"}):
-			subteams = self.release_pattern.match("%s"%subs.contents[1]).groups()[0]
+			subteams = self.release_pattern.match("%s"%subs.contents[1]).groups()[0].lower()
+			logging.debug("Team from website: %s" %subteams)
+			logging.debug("Team from file: %s" %teams)
 			langs_html = subs.findNext("td", {"class" : "language"})
+			print langs_html
 			lang = self.getLG(langs_html.string.strip())
+			print lang
+			print langs
 		
 			statusTD = langs_html.findNext("td")
 			status = statusTD.find("strong").string.strip()
 
 			link = statusTD.findNext("td").find("a")["href"]
-			if status == "Completado" and set(subteams.split(".")).issubset(set(teams)) and (not langs or lang in langs) :
+			teams = set(teams)
+			subteams = self.listTeams([subteams], [".", "_"])
+			print subteams.issubset(teams)
+			print subteams
+			print teams
+			if status == "Completado" and subteams.issubset(teams) and (not langs or lang in langs) :
 				result = {}
 				result["release"] = "%s.S%.2dE%.2d.%s" %(name.replace("-", "."), int(season), int(episode), subteams)
 				result["lang"] = lang
@@ -85,6 +95,19 @@ class Subtitulos(SubtitleDatabase.SubtitleDB):
 				sublinks.append(result)
 				
 		return sublinks
+		
+	def listTeams(self, subteams, separators):
+		teams = []
+		for sep in separators:
+			subteams = self.splitTeam(subteams, sep)
+		logging.debug(subteams)
+		return set(subteams)
+	
+	def splitTeam(self, subteams, sep):
+		teams = []
+		for t in subteams:
+			teams += t.split(sep)
+		return teams
 
 	def createFile(self, suburl, videofilename):
 		'''pass the URL of the sub and the file it matches, will unzip it

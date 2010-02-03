@@ -21,3 +21,5 @@ from SubtitleSource import SubtitleSource
 from Podnapisi import Podnapisi
 from SubScene import SubScene
 from Subtitulos import Subtitulos
+
+#from Podnapisi2 import Podnapisi

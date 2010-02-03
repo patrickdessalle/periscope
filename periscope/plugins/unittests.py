@@ -12,7 +12,7 @@ class RegexTestCase(unittest.TestCase):
 		filenames = ('Gary.Unmarried.S02E11.Gary.Is.a.Boat.Guy.HDTV.XviD-FQM.avi', 'Marley & Me.2008-L33t-DvDRiP.DivX.NoRaR')
 		for filename in filenames:
 			print "%s => %s" %(filename, subdb.guessFileData(filename))
-'''			
+		
 
 
 class SubtitulosTestCase(unittest.TestCase):
@@ -23,7 +23,7 @@ class SubtitulosTestCase(unittest.TestCase):
 		print results
 		assert len(results) == 1, "Not enough result could be found for Gary.Unmarried.S02E11.Gary.Is.a.Boat.Guy.HDTV.XviD-FQM.avi and no languages"
 			
-'''
+
 class OpenSubtitlesTestCase(unittest.TestCase):
 	def runTest(self):
 		import OpenSubtitles
@@ -32,26 +32,29 @@ class OpenSubtitlesTestCase(unittest.TestCase):
 		results = subdb.query('Night.Watch.2004.CD1.DVDRiP.XViD-FiCO.avi', moviehash="09a2c497663259cb", bytesize="733589504")
 		
 		assert len(results) > 0, 'No result found for Night.Watch.2004.CD1.DVDRiP.XViD-FiCO.avi by movie hash'
-
+'''
 
 class OpenSubtitlesTestCaseFileName(unittest.TestCase):
 	def runTest(self):
 		import OpenSubtitles
 		subdb = OpenSubtitles.OpenSubtitles()
 		# movie hash if for night watch : http://trac.opensubtitles.org/projects/opensubtitles/wiki/XMLRPC
+		filenames = []
 		#filename = 'Dexter.S04E01.HDTV.XviD-NoTV'
 		#filename = 'The.Office.US.S06E01.HDTV.XviD-2HD.[VTV]'
-		filenames = ['Marley & Me.2008-L33t-DvDRiP.DivX.NoRaR']
-		#filenames.append("Twilight[2008]DvDrip-aXXo")
+		#filenames.append('Marley & Me.2008-L33t-DvDRiP.DivX.NoRaR')
+		filenames.append("Twilight[2008]DvDrip-aXXo")
 		
 		for filename in filenames:
 			results = subdb.query(filename)
 		
 			if results :
 				print "Found %s results" %len(results)
+				print "Showing first for unit test::"
 				print results[0]
 			assert len(results) > 0, 'No result found for %s' %filename
 
+'''
 class SubtitleSourceTestCase(unittest.TestCase):
 	def runTest(self):
 		import SubtitleSource

@@ -86,9 +86,8 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 				lng = subs.find("a").find("img")["src"].rsplit("/", 1)[1][:-4]
 				if langs and not self.getLG(lng) in langs:
 					continue # The lang of this sub is not wanted => Skip
-				
-				dltag = subs.findAll("a")[2]["href"]
-				dllink = self.host + dltag
+				dltag = subs.findAll("a")[1]["href"].split("/")[4]
+				dllink = self.host + "ppodnapisi/download/i/" + dltag
 				result = {}
 				for rel in releases :
 					if rel == token.lower():

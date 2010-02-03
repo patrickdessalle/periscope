@@ -62,7 +62,6 @@ class Periscope:
 		self._preferedLanguages = None
 
 	def get_preferedLanguages(self):
-		print self.config
 		lang = self.config.get("DEFAULT", "lang")
 		logging.info("lang read from config: " + lang)
 		if lang == "":
@@ -166,8 +165,11 @@ class Periscope:
 				self.attemptDownloadSubtitle(subtitles, langs)
 		else :
 			logging.error("No subtitles could be chosen.")
-			return Exception("No subtitle was chosen from the list of subtitles")
-		
+			return Exception("No subtitle was chosen from the list of subtitles")		
+
+	def guessFileData(self, filename):
+		subdb = plugins.SubtitleDatabase.SubtitleDB(None)
+		return subdb.guessFileData(filename)		
 		
 	def __orderSubtitles__(self, subs):
 		'''reorders the subtitles according to the languages then the website'''
@@ -194,6 +196,3 @@ class Subtitle:
 		
 	def download(self):
 		self.downloadmethod(self.link, self.filename)
-		
-
-
