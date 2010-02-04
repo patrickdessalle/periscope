@@ -72,10 +72,7 @@ class Subtitulos(SubtitleDatabase.SubtitleDB):
 			logging.debug("Team from website: %s" %subteams)
 			logging.debug("Team from file: %s" %teams)
 			langs_html = subs.findNext("td", {"class" : "language"})
-			print langs_html
 			lang = self.getLG(langs_html.string.strip())
-			print lang
-			print langs
 		
 			statusTD = langs_html.findNext("td")
 			status = statusTD.find("strong").string.strip()
@@ -83,15 +80,14 @@ class Subtitulos(SubtitleDatabase.SubtitleDB):
 			link = statusTD.findNext("td").find("a")["href"]
 			teams = set(teams)
 			subteams = self.listTeams([subteams], [".", "_"])
-			print subteams.issubset(teams)
-			print subteams
-			print teams
 			if status == "Completado" and subteams.issubset(teams) and (not langs or lang in langs) :
 				result = {}
-				result["release"] = "%s.S%.2dE%.2d.%s" %(name.replace("-", "."), int(season), int(episode), subteams)
+				result["release"] = "%s.S%.2dE%.2d.%s" %(name.replace("-", "."), int(season), int(episode), '.'.join(subteams)
+)
 				result["lang"] = lang
 				result["link"] = link
 				result["page"] = link
+				print result
 				sublinks.append(result)
 				
 		return sublinks
