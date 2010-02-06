@@ -68,27 +68,32 @@ class Subtitulos(SubtitleDatabase.SubtitleDB):
 		
 		soup = BeautifulSoup(page)
 		for subs in soup("td", {"class":"NewsTitle"}):
-			subteams = self.release_pattern.match("%s"%subs.contents[1]).groups()[0].lower()
+			subteams = self.release_pattern.match("%s"%subs.contents[1]).groups()[0].lower()			
+			teams = set(teams)
+			subteams = self.listTeams([subteams], [".", "_", " "])
+			
 			logging.debug("Team from website: %s" %subteams)
 			logging.debug("Team from file: %s" %teams)
-			langs_html = subs.findNext("td", {"class" : "language"})
-			lang = self.getLG(langs_html.string.strip())
+			
+			#langs_html = subs.findNext("td", {"class" : "language"})
+			#lang = self.getLG(langs_html.string.strip())
+			
+			nexts = subs.parent.parent.findAll("td", {"class" : "language"})
+			for langs_html in nexts:
+				lang = self.getLG(langs_html.string.strip())
 		
-			statusTD = langs_html.findNext("td")
-			status = statusTD.find("strong").string.strip()
+				statusTD = langs_html.findNext("td")
+				status = statusTD.find("strong").string.strip()
 
-			link = statusTD.findNext("td").find("a")["href"]
-			teams = set(teams)
-			subteams = self.listTeams([subteams], [".", "_"])
-			if status == "Completado" and subteams.issubset(teams) and (not langs or lang in langs) :
-				result = {}
-				result["release"] = "%s.S%.2dE%.2d.%s" %(name.replace("-", "."), int(season), int(episode), '.'.join(subteams)
-)
-				result["lang"] = lang
-				result["link"] = link
-				result["page"] = link
-				print result
-				sublinks.append(result)
+				link = statusTD.findNext("td").find("a")["href"]
+				if status == "Completado" and subteams.issubset(teams) and (not langs or lang in langs) :
+					result = {}
+					result["release"] = "%s.S%.2dE%.2d.%s" %(name.replace("-", "."), int(season), int(episode), '.'.join(subteams)
+	)
+					result["lang"] = lang
+					result["link"] = link
+					result["page"] = link
+					sublinks.append(result)
 				
 		return sublinks
 		

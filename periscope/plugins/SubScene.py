@@ -88,13 +88,16 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 		format = urllib2.urlparse.urlsplit(suburl)[2].rsplit('/', 1)[1].split('.')[0]
 		archivefilename = srtbasefilename + '.'+ format
 		self.downloadFile(suburl, archivefilename)
+		subtitlefilename = None
 		
 		if zipfile.is_zipfile(archivefilename):
 			logging.debug("Unzipping file " + archivefilename)
 			zf = zipfile.ZipFile(archivefilename, "r")
 			for el in zf.infolist():
-				if el.orig_filename.rsplit(".", 1)[1] in ("srt", "sub", "txt"):
-					outfile = open(srtbasefilename + "." + el.orig_filename.rsplit(".", 1)[1], "wb")
+				extension = el.orig_filename.rsplit(".", 1)[1]
+				if extension in ("srt", "sub", "txt"):
+					subtitlefilename = srtbasefilename + "." + extension
+					outfile = open(subtitlefilename, "wb")
 					outfile.write(zf.read(el.orig_filename))
 					outfile.flush()
 					outfile.close()
@@ -103,21 +106,32 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 			# Deleting the zip file
 			zf.close()
 			os.remove(archivefilename)
-			return srtbasefilename + ".srt"
+			return subtitlefilename
 		elif archivefilename.endswith('.rar'):
 			logging.warn('Rar is not really supported yet. Trying to call unrar')
 			import subprocess
 			try :
-				retcode = subprocess.call("unrar %s" %archivefilename, shell=True)
-				if retcode < 0:
-					log.error("Child was terminated by signal %s" %retcode)
-				else:
-					log.error("Child returned %s" %retcode)
+				args = ['unrar', 'lb', archivefilename]
+				output = subprocess.Popen(args, stdout=subprocess.PIPE).communicate()[0]
+				for el in output.splitlines():
+					extension = el.rsplit(".", 1)[1]
+					if extension in ("srt", "sub"):
+						args = ['unrar', 'e', archivefilename, el, os.path.dirname(archivefilename)]
+						subprocess.Popen(args)
+						tmpsubtitlefilename = os.path.join(os.path.dirname(archivefilename), el)
+						subtitlefilename = os.path.join(os.path.dirname(archivefilename), srtbasefilename+"."+extension)
+						if os.path.exists(tmpsubtitlefilename):
+							# rename it to match the file
+							os.rename(tmpsubtitlefilename, subtitlefilename)
+							# exit
+						return subtitlefilename
 			except OSError, e:
-			    log.error("Execution failed: %s" %e)
+			    logging.error("Execution failed: %s" %e)
+			    return None
 			
 		else:
 			logging.info("Unexpected file type (not zip) for %s" %archivefilename)
+			return None
 
 	def downloadFile(self, url, filename):
 		''' Downloads the given url to the given filename '''

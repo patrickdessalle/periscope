@@ -13,17 +13,21 @@ class RegexTestCase(unittest.TestCase):
 		for filename in filenames:
 			print "%s => %s" %(filename, subdb.guessFileData(filename))
 		
-
+'''
 
 class SubtitulosTestCase(unittest.TestCase):
 	def runTest(self):
 		import Subtitulos
 		subdb = Subtitulos.Subtitulos()
-		results = subdb.process("/burn/Gary.Unmarried.S02E11.Gary.Is.a.Boat.Guy.HDTV.XviD-FQM.avi", None)
-		print results
-		assert len(results) == 1, "Not enough result could be found for Gary.Unmarried.S02E11.Gary.Is.a.Boat.Guy.HDTV.XviD-FQM.avi and no languages"
+		fname = "CSI.S10E13.HDTV.XvID-FQM.avi"
+		guessedData = subdb.guessFileData(fname)
+		print fname
+		print guessedData
+		if guessedData['type'] == 'tvshow':
+			subs = subdb.query(guessedData['name'], guessedData['season'], guessedData['episode'], guessedData['teams'])
+			print subs
 			
-
+'''
 class OpenSubtitlesTestCase(unittest.TestCase):
 	def runTest(self):
 		import OpenSubtitles
@@ -32,7 +36,6 @@ class OpenSubtitlesTestCase(unittest.TestCase):
 		results = subdb.query('Night.Watch.2004.CD1.DVDRiP.XViD-FiCO.avi', moviehash="09a2c497663259cb", bytesize="733589504")
 		
 		assert len(results) > 0, 'No result found for Night.Watch.2004.CD1.DVDRiP.XViD-FiCO.avi by movie hash'
-'''
 
 class OpenSubtitlesTestCaseFileName(unittest.TestCase):
 	def runTest(self):
@@ -54,7 +57,6 @@ class OpenSubtitlesTestCaseFileName(unittest.TestCase):
 				print results[0]
 			assert len(results) > 0, 'No result found for %s' %filename
 
-'''
 class SubtitleSourceTestCase(unittest.TestCase):
 	def runTest(self):
 		import SubtitleSource
