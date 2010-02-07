@@ -36,7 +36,7 @@ except ImportError:
 import plugins
 
 SUPPORTED_FORMATS = 'video/x-msvideo', 'video/quicktime', 'video/x-matroska', 'video/mp4'
-VERSION = "0.1.8"
+VERSION = "0.1.8.1"
 
 class Periscope:
 	''' Main Periscope class'''
@@ -154,9 +154,13 @@ class Periscope:
 			logging.info("Trying to download subtitle: %s" %subtitle['link'])
 			#Download the subtitle
 			try:
-				subpath = subtitle["plugin"].createFile(subtitle["link"], subtitle["filename"])			
-				subtitle["subtitlepath"] = subpath
-				return subtitle
+				subpath = subtitle["plugin"].createFile(subtitle["link"], subtitle["filename"])		
+				if subpath:	
+					subtitle["subtitlepath"] = subpath
+					return subtitle
+				else:
+					# throw exception to remove it
+					raise Exception("Not downloaded")
 			except Exception as inst:
 				# Could not download that subtitle, remove it
 				logging.warn("Subtitle %s could not be downloaded, trying the next on the list" %subtitle['link'])
