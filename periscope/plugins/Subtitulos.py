@@ -88,7 +88,7 @@ class Subtitulos(SubtitleDatabase.SubtitleDB):
 				link = statusTD.findNext("td").find("a")["href"]
 				if status == "Completado" and subteams.issubset(teams) and (not langs or lang in langs) :
 					result = {}
-					result["release"] = "%s.S%.2dE%.2d.%s" %(name.replace("-", "."), int(season), int(episode), '.'.join(subteams)
+					result["release"] = "%s.S%.2dE%.2d.%s" %(name.replace("-", ".").title(), int(season), int(episode), '.'.join(subteams)
 	)
 					result["lang"] = lang
 					result["link"] = link
