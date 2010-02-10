@@ -13,13 +13,27 @@ class RegexTestCase(unittest.TestCase):
 		for filename in filenames:
 			print "%s => %s" %(filename, subdb.guessFileData(filename))
 		
-'''
+
 
 class SubtitulosTestCase(unittest.TestCase):
 	def runTest(self):
 		import Subtitulos
 		subdb = Subtitulos.Subtitulos()
 		fname = "CSI.S10E13.HDTV.XvID-FQM.avi"
+		guessedData = subdb.guessFileData(fname)
+		print fname
+		print guessedData
+		if guessedData['type'] == 'tvshow':
+			subs = subdb.query(guessedData['name'], guessedData['season'], guessedData['episode'], guessedData['teams'])
+			print subs
+'''
+
+
+class Addic7edTestCase(unittest.TestCase):
+	def runTest(self):
+		import Addic7ed
+		subdb = Addic7ed.Addic7ed()
+		fname = "The.Big.Bang.Theory.S03E13.HDTV.XviD-2HD"
 		guessedData = subdb.guessFileData(fname)
 		print fname
 		print guessedData
