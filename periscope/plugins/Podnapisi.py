@@ -73,7 +73,15 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 
 		searchurl = self.host + self.search + urllib.urlencode(params)
 		logging.debug("dl'ing %s" %searchurl)
-		page = urllib2.urlopen(searchurl)
+		try:
+			socket.setdefaulttimeout(10)
+			page = urllib2.urlopen(searchurl)
+		except urllib2.HTTPError as inst:
+			logging.info("Error : %s" %inst)
+			return sublinks
+		except urllib2.URLError as inst:
+			logging.info("TimeOut : %s" %inst)
+			return sublinks
 		content = page.read()
 		# Workaround for the Beautifulsoup 3.1 bug
 		content = content.replace("scr'+'ipt", "script")

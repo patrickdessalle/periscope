@@ -30,7 +30,8 @@ LANGUAGES = {u"English (US)" : "en",
 			 u"Español (Latinoamérica)" : "es",
 			 u"Español (España)" : "es",
 			 u"Español" : "es",
-			 u"Italian" : "it"}
+			 u"Italian" : "it",
+			 u"Català" : "ca"}
 
 class Subtitulos(SubtitleDatabase.SubtitleDB):
 	url = "http://www.subtitulos.es"
