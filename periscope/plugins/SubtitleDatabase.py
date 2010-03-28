@@ -30,7 +30,7 @@ class SubtitleDB(object):
 			self.langs = dict(map(lambda item: (item[1],item[0]), self.revertlangs.items()))
 		self.tvshowRegex = re.compile('(?P<show>.*)S(?P<season>[0-9]{2})E(?P<episode>[0-9]{2}).(?P<teams>.*)', re.IGNORECASE)
 		self.tvshowRegex2 = re.compile('(?P<show>.*).(?P<season>[0-9]{2})x(?P<episode>[0-9]{2}).(?P<teams>.*)', re.IGNORECASE)
-		self.movieRegex = re.compile('(?P<movie>.*)[\.|\[|\(| ]{1}(?P<year>(?:(?:19|20)[0-9]{2}))(?P<teams>.*)', re.IGNORECASE)
+		self.movieRegex = re.compile('(?P<movie>.*)[\.|\[|\(| ]{1}(?P<year>(?:(?:19|20)[0-9]{2}))(?P<teams>.*?)(?P<part>cd1)?', re.IGNORECASE)
 
 	def searchInThread(self, queue, filename, langs):
 		''' search subtitles with the given filename for the given languages'''
@@ -75,13 +75,16 @@ class SubtitleDB(object):
 			return srtbasefilename + ".srt"
 		else:
 			logging.info("Unexpected file type (not zip)")
+			os.remove(zipfilename)
 			return None
 
 	def downloadFile(self, url, filename):
 		''' Downloads the given url to the given filename '''
 		try:
 			logging.info("Downloading %s" %url)
-			f = urllib2.urlopen(url)
+			req = urllib2.Request(url, headers={'Referer' : url, 'User-Agent' : 'Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.3)'})
+		
+			f = urllib2.urlopen(req)
 			dump = open(filename, "wb")
 			dump.write(f.read())
 			dump.close()
@@ -128,20 +131,20 @@ class SubtitleDB(object):
 			(tvshow, season, episode, teams) = matches_tvshow.groups()
 			tvshow = tvshow.replace(".", " ").strip()
 			teams = teams.split('.')
-			return {'type' : 'tvshow', 'name' : tvshow.strip(), 'season' : season, 'episode' : episode, 'teams' : teams}
+			return {'type' : 'tvshow', 'name' : tvshow.strip(), 'season' : int(season), 'episode' : int(episode), 'teams' : teams}
 		else:
 			matches_tvshow = self.tvshowRegex2.match(filename)
 			if matches_tvshow:
 				(tvshow, season, episode, teams) = matches_tvshow.groups()
 				tvshow = tvshow.replace(".", " ").strip()
 				teams = teams.split('.')
-				return {'type' : 'tvshow', 'name' : tvshow.strip(), 'season' : season, 'episode' : episode, 'teams' : teams}
+				return {'type' : 'tvshow', 'name' : tvshow.strip(), 'season' : int(season), 'episode' : int(episode), 'teams' : teams}
 			else:
 				matches_movie = self.movieRegex.match(filename)
 				if matches_movie:
-					(movie, year, teams) = matches_movie.groups()
+					(movie, year, teams, part) = matches_movie.groups()
 					teams = teams.split('.')
-					return {'type' : 'movie', 'name' : movie.strip(), 'year' : year, 'teams' : teams}
+					return {'type' : 'movie', 'name' : movie.strip(), 'year' : year, 'teams' : teams, 'part' : part}
 				else:
 					return {'type' : 'unknown', 'name' : filename }
 		

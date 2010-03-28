@@ -166,10 +166,10 @@ class Periscope:
 				logging.warn("Subtitle %s could not be downloaded, trying the next on the list" %subtitle['link'])
 				logging.error(inst)
 				subtitles.remove(subtitle)
-				self.attemptDownloadSubtitle(subtitles, langs)
+				return self.attemptDownloadSubtitle(subtitles, langs)
 		else :
 			logging.error("No subtitles could be chosen.")
-			return Exception("No subtitle was chosen from the list of subtitles")		
+			return None		
 
 	def guessFileData(self, filename):
 		subdb = plugins.SubtitleDatabase.SubtitleDB(None)

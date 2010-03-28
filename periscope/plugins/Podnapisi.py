@@ -87,7 +87,7 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 				if langs and not self.getLG(lng) in langs:
 					continue # The lang of this sub is not wanted => Skip
 				dltag = subs.findAll("a")[1]["href"].split("/")[4]
-				dllink = self.host + "ppodnapisi/download/i/" + dltag
+				dllink = self.host + "ppodnapisi/download/i/" + dltag + "/k/9c594c649bee3dc4bafbd00ace80907e74df3424"
 				result = {}
 				for rel in releases :
 					if rel == token.lower():
