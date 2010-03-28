@@ -30,7 +30,7 @@ class SubtitleDB(object):
 			self.langs = dict(map(lambda item: (item[1],item[0]), self.revertlangs.items()))
 		self.tvshowRegex = re.compile('(?P<show>.*)S(?P<season>[0-9]{2})E(?P<episode>[0-9]{2}).(?P<teams>.*)', re.IGNORECASE)
 		self.tvshowRegex2 = re.compile('(?P<show>.*).(?P<season>[0-9]{2})x(?P<episode>[0-9]{2}).(?P<teams>.*)', re.IGNORECASE)
-		self.movieRegex = re.compile('(?P<movie>.*)[\.|\[|\(| ]{1}(?P<year>(?:(?:19|20)[0-9]{2}))(?P<teams>.*?)(?P<part>cd1)?', re.IGNORECASE)
+		self.movieRegex = re.compile('(?P<movie>.*)[\.|\[|\(| ]{1}(?P<year>(?:(?:19|20)[0-9]{2}))(?P<teams>.*)(?P<part>cd1)?', re.IGNORECASE)
 
 	def searchInThread(self, queue, filename, langs):
 		''' search subtitles with the given filename for the given languages'''
