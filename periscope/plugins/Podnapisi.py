@@ -16,7 +16,7 @@
 #    along with periscope; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-import zipfile, os, urllib2, urllib, traceback, logging
+import zipfile, os, urllib2, urllib, traceback, logging, socket
 from BeautifulSoup import BeautifulSoup
 
 import SubtitleDatabase
