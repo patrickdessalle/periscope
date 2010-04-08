@@ -153,7 +153,7 @@ class SubtitleDB(object):
 						part = 2
 					return {'type' : 'movie', 'name' : movie.strip(), 'year' : year, 'teams' : teams, 'part' : part}
 				else:
-					return {'type' : 'unknown', 'name' : filename }
+					return {'type' : 'unknown', 'name' : filename, 'teams' : [] }
 		
 
 class InvalidFileException(Exception):

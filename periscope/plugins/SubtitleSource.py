@@ -96,7 +96,7 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 				releaseMetaData = self.guessFileData(result['release'])
 				teams = set(metaData['teams'])
 				srtTeams = set(releaseMetaData['teams'])
-				print (releaseMetaData['teams'] in metaData['teams'])
+				logging.debug("%s in %s ? %s - %s" %(releaseMetaData['teams'], metaData['teams'], teams.issubset(srtTeams), srtTeams.issubset(teams)))
 				if result['release'].startswith(token) or (releaseMetaData['type'] == metaData['type'] and (teams.issubset(srtTeams) or srtTeams.issubset(teams))):
 					sublinks.append(result)
 		return sublinks
