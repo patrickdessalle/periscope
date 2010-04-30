@@ -34,10 +34,13 @@ class SubtitleDB(object):
 
 	def searchInThread(self, queue, filename, langs):
 		''' search subtitles with the given filename for the given languages'''
-		subs = self.process(filename, langs)
-		map(lambda item: item.setdefault("plugin", self), subs)
-		map(lambda item: item.setdefault("filename", filename), subs)
-		logging.info("%s writing %s items to queue" % (self.__class__.__name__, len(subs)))
+		try:
+			subs = self.process(filename, langs)
+			map(lambda item: item.setdefault("plugin", self), subs)
+			map(lambda item: item.setdefault("filename", filename), subs)
+			logging.info("%s writing %s items to queue" % (self.__class__.__name__, len(subs)))
+		except:
+			subs = []
 		queue.put(subs, True) # Each plugin must write as the caller periscopy.py waits for an result on the queue
 	
 	def process(self, filepath, langs):
