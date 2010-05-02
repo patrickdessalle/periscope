@@ -76,7 +76,7 @@ class Addic7ed(SubtitleDatabase.SubtitleDB):
 			socket.setdefaulttimeout(3)
 			page = urllib2.urlopen(searchurl)
 		except urllib2.HTTPError as inst:
-			logging.info("Error : %s" %inst)
+			logging.info("Error : %s - %s" %(searchurl, inst))
 			return sublinks
 		except urllib2.URLError as inst:
 			logging.info("TimeOut : %s" %inst)
@@ -88,7 +88,10 @@ class Addic7ed(SubtitleDatabase.SubtitleDB):
 		
 		soup = BeautifulSoup(content)
 		for subs in soup("td", {"class":"NewsTitle", "colspan" : "3"}):
+			if not self.release_pattern.match(str(subs.contents[1])):
+				continue
 			subteams = self.release_pattern.match(str(subs.contents[1])).groups()[0].lower()
+			
 			# Addic7ed only takes the real team	into account
 			fteams = []
 			for team in teams:
@@ -96,34 +99,34 @@ class Addic7ed(SubtitleDatabase.SubtitleDB):
 			teams = set(fteams)
 			subteams = self.listTeams([subteams], [".", "_", " "])
 			
-			logging.debug("Team from website: %s" %subteams)
-			logging.debug("Team from file: %s" %teams)
-			logging.debug("match ? %s" %subteams.issubset(teams))
+			'''logging.debug("Team from website: %s" %subteams)
+			logging.debug("Team from file: %s" %teams)'''
+			#logging.debug("match ? %s" %subteams.issubset(teams))
 			
 			langs_html = subs.findNext("td", {"class" : "language"})
 			lang = self.getLG(langs_html.string.strip())
-			logging.debug("Language : %s - lang : %s" %(langs_html, lang))
-	
+			#logging.debug("Language : %s - lang : %s" %(langs_html, lang))
+			
 			statusTD = langs_html.findNext("td")
 			status = statusTD.find("strong").string.strip()
 
 			link = "%s%s"%(self.host,statusTD.findNext("td").find("a")["href"])
+			#logging.debug("%s - match : %s - lang : %s" %(status == "Completed", subteams.issubset(teams), (not langs or lang in langs)))
 			if status == "Completed" and subteams.issubset(teams) and (not langs or lang in langs) :
 				result = {}
 				result["release"] = "%s.S%.2dE%.2d.%s" %(name.replace("_", ".").title(), int(season), int(episode), '.'.join(subteams)
 )
 				result["lang"] = lang
 				result["link"] = link
-				result["page"] = link
+				result["page"] = searchurl
 				sublinks.append(result)
-			
 		return sublinks
 		
 	def listTeams(self, subteams, separators):
 		teams = []
 		for sep in separators:
 			subteams = self.splitTeam(subteams, sep)
-		logging.debug(subteams)
+		#logging.debug(subteams)
 		return set(subteams)
 	
 	def splitTeam(self, subteams, sep):

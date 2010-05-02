@@ -64,7 +64,7 @@ class Subtitulos(SubtitleDatabase.SubtitleDB):
 		try:
 			page = urllib2.urlopen(searchurl)
 		except urllib2.HTTPError as inst:
-			logging.debug(inst)
+			logging.debug("Error : %s for %s" % (searchurl, inst))
 			return sublinks
 		
 		soup = BeautifulSoup(page)
