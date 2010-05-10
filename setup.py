@@ -1,5 +1,5 @@
 from setuptools import setup
-import version
+from periscope import version
 
 PACKAGE = 'periscope'
 VERSION = version.VERSION

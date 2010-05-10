@@ -93,7 +93,7 @@ class Subtitulos(SubtitleDatabase.SubtitleDB):
 	)
 					result["lang"] = lang
 					result["link"] = link
-					result["page"] = link
+					result["page"] = searchurl
 					sublinks.append(result)
 				
 		return sublinks
