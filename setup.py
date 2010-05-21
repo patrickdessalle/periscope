@@ -1,8 +1,8 @@
 from setuptools import setup
-from periscope import version
+import periscope.version
 
 PACKAGE = 'periscope'
-VERSION = version.VERSION
+VERSION = periscope.version.VERSION
 
 #setup(name=PACKAGE, version=VERSION, packages=['plugins', 'periscope.py', '__init__.py'])
 
