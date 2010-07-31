@@ -61,6 +61,7 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 	
 	def query(self, token, langs=None):
 		''' makes a query on subtitlessource and returns info (link, lang) about found subtitles'''
+		logging.debug("local file is  : %s " % token)
 		sublinks = []
 		
 		if not langs: # langs is empty of None
@@ -71,7 +72,9 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 		# Get the CD part of this
 		metaData = self.guessFileData(token)
 		multipart = metaData.get('part', None)
-		part = metaData.get('part', 1)
+		part = metaData.get('part')
+		if not part : # part will return None if not found using the regex
+		    part = 1
 							
 		for lang in languages:
 			searchurl = "%s/%s/%s/0" %(self.host, urllib.quote(token), lang)
@@ -96,8 +99,11 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 				releaseMetaData = self.guessFileData(result['release'])
 				teams = set(metaData['teams'])
 				srtTeams = set(releaseMetaData['teams'])
-				logging.debug("%s in %s ? %s - %s" %(releaseMetaData['teams'], metaData['teams'], teams.issubset(srtTeams), srtTeams.issubset(teams)))
-				if result['release'].startswith(token) or (releaseMetaData['type'] == metaData['type'] and (teams.issubset(srtTeams) or srtTeams.issubset(teams))):
+				logging.debug("Analyzing : %s " % result['release'])
+				logging.debug("local file has : %s " % metaData['teams'])
+				logging.debug("remote sub has  : %s " % releaseMetaData['teams'])
+				#logging.debug("%s in %s ? %s - %s" %(releaseMetaData['teams'], metaData['teams'], teams.issubset(srtTeams), srtTeams.issubset(teams)))
+				if result['release'].startswith(token) or (releaseMetaData['name'] == metaData['name'] and releaseMetaData['type'] == metaData['type'] and (teams.issubset(srtTeams) or srtTeams.issubset(teams))):
 					sublinks.append(result)
 		return sublinks
 
