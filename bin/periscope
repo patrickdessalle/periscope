@@ -31,18 +31,34 @@ def main():
 	parser = OptionParser("usage: %prog [options] file1 file2", version = periscope.VERSION)
 	parser.add_option("-l", "--language", action="append", dest="langs", help="wanted language (ISO 639-1 two chars) for the subtitles (fr, en, ja, ...). If none is specified will download a subtitle in any language. This option can be used multiple times like %prog -l fr -l en file1 will try to download in french and then in english if no french subtitles are found.")
 	parser.add_option("-q", "--query", action="append", dest="queries", help="query to send to the subtitles website")
+	parser.add_option("--list-plugins", action="store_true", dest="show_plugins", help="list all plugins supported by periscope")
+	parser.add_option("--list-active-plugins", action="store_true", dest="show_active_plugins", help="list all plugins used to search subtitles (a subset of all the supported plugins)")
 	parser.add_option("--debug", action="store_true", dest="debug", help="set the logging level to debug")
 	(options, args) = parser.parse_args()
 
-	if not args:
+	if not args and not options:
 		print parser.print_help()
 		exit()
+	
+	periscope_client = periscope.Periscope()
 
 	# process args
 	if options.debug:
 		logging.basicConfig(level=logging.DEBUG)
 	else:
 		logging.basicConfig(level=logging.INFO)
+		
+	if options.show_active_plugins:
+	    plugins = periscope_client.listActivePlugins()
+	    for plugin in plugins:
+	        print "%s : %s" %(plugin.site_name, plugin.url)
+	    exit()
+	    
+	if options.show_plugins:
+	    plugins = periscope_client.listExistingPlugins()
+	    for plugin in plugins:
+	        print "%s : %s" %(plugin.site_name, plugin.url)
+	    exit()
 			
 	if options.queries: args += options.queries
 	videos = []
@@ -51,7 +67,6 @@ def main():
 
 	subs = []
 	for arg in videos:
-		periscope_client = periscope.Periscope()
 		if not options.langs: #Look into the config
 			logging.info("No lang given, looking into config file")
 			langs = periscope_client.preferedLanguages
