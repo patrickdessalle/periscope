@@ -38,6 +38,7 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 		''' main method to call on the plugin, pass the filename and the wished 
 		languages and it will query the subtitles source '''
 		fname = self.getFileName(filepath)
+		logging.debug("Searching for %s" %fname)
 		try:
 			subs = []
 			if langs:
@@ -94,14 +95,14 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 				lng = subs.find("a").find("img")["src"].rsplit("/", 1)[1][:-4]
 				if langs and not self.getLG(lng) in langs:
 					continue # The lang of this sub is not wanted => Skip
-				dltag = subs.findAll("a")[1]["href"].split("/")[4]
+				dltag = subs.findAll("a")[1]["href"].split("/")[5]
 				dllink = self.host + "ppodnapisi/download/i/" + dltag + "/k/9c594c649bee3dc4bafbd00ace80907e74df3424"
 				result = {}
 				for rel in releases :
 					if rel == token.lower():
 						result["release"] = rel
 				result["link"] = dllink
-				result["page"] = dllink
+				result["page"] = self.host + "ppodnapisi/podnapis/i/%s/" %dltag
 				result["lang"] = self.getLG(lng)
 				sublinks.append(result)
 

@@ -1,9 +1,13 @@
-import OpenSubtitles
+import TheSubDB
+import logging
 
-p = OpenSubtitles.OpenSubtitles()
-filename = "/media/disk/Videos/Series/How I Met Your Mother/S4/How.I.Met.Your.Mother.S04E06.HDTV.XviD-LOL.[VTV].avi"
-subs = p.process(filename, ["en"])
+logging.basicConfig(level=logging.DEBUG)
+
+p = TheSubDB.TheSubDB()
+filename = "/burn/Better.Off.Ted.S02E07.HDTV.XviD-2HD.[VTV].avi"
+subs = p.process(filename, ["en", "pt"])
 
 print subs
 
-#p.createFile(subs[0]["link"], "/media/disk/Videos/Series/How I Met Your Mother/S4/How.I.Met.Your.Mother.S04E06.HDTV.XviD-LOL.[VTV].avi")
+if subs:
+    p.createFile(subs[0]["link"], "/tmp/test.avi")

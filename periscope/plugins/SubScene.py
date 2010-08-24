@@ -168,7 +168,7 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 			sub_format = subs["href"].split("'")[1]
 			#http://subscene.com//s-dlpath-260016/78348/rar.zipx
 			link = "http://subscene.com//s-dlpath-%s/%s/%s.zipx" %(sub_id, sub_id2, sub_format)
-			if release.startswith(token):
+			if release.startswith(token) and lang in langs:
 				result = {}
 				result["release"] = release
 				result["lang"] = lang
