@@ -33,6 +33,7 @@ def main():
 	parser.add_option("-q", "--query", action="append", dest="queries", help="query to send to the subtitles website")
 	parser.add_option("--list-plugins", action="store_true", dest="show_plugins", help="list all plugins supported by periscope")
 	parser.add_option("--list-active-plugins", action="store_true", dest="show_active_plugins", help="list all plugins used to search subtitles (a subset of all the supported plugins)")
+	parser.add_option("--quiet", action="store_true", dest="quiet", help="run in quiet mode (only show warn and error messages)")
 	parser.add_option("--debug", action="store_true", dest="debug", help="set the logging level to debug")
 	(options, args) = parser.parse_args()
 
@@ -43,9 +44,11 @@ def main():
 	periscope_client = periscope.Periscope()
 
 	# process args
-	if options.debug:
+	if options.debug :
 		logging.basicConfig(level=logging.DEBUG)
-	else:
+	elif options.quiet :
+	    logging.basicConfig(level=logging.WARN)
+	else :
 		logging.basicConfig(level=logging.INFO)
 		
 	if options.show_active_plugins:
@@ -76,11 +79,13 @@ def main():
 		if sub:
 			subs.append(sub)
 	
-	logging.info("*"*50)
-	logging.info("Downloaded %s subtitles" %len(subs))
+	logging.warn("*"*50)
+	logging.warn("Downloaded %s subtitles" %len(subs))
 	for s in subs:
-		logging.info(s['lang'] + " - " + s['subtitlepath'])
-	logging.info("*"*50)
+		logging.warn(s['lang'] + " - " + s['subtitlepath'])
+	logging.warn("*"*50)
+	if len(subs) == 0:
+	    exit(1)
 
 
 def recursive_search(entry):
@@ -96,7 +101,7 @@ def recursive_search(entry):
 		if mimetype in SUPPORTED_FORMATS:
 			files.append(os.path.normpath(entry))
 		else :
-			logging.warn("%s mimetype is '%s' which is not a supported video format (%s)" %(entry, mimetype, SUPPORTED_FORMATS))
+			logging.info("%s mimetype is '%s' which is not a supported video format (%s)" %(entry, mimetype, SUPPORTED_FORMATS))
 	return files
 	
 if __name__ == "__main__":
