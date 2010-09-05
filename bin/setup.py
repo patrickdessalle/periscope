@@ -1,12 +1,19 @@
 from setuptools import setup
 import shutil
 import os
+import version
 
 PACKAGE = 'periscope-gnome'
-VERSION = '0.1.12'
+VERSION = version.VERSION
 
-try:
-    os.makedirs('debian/python-gnome/usr/lib/nautilus/extensions-2.0/python/')
-except:
-    pass
-shutil.copy('periscope-nautilus/periscope-nautilus.py', 'debian/python-gnome/usr/lib/nautilus/extensions-2.0/python/')
+setup(name = PACKAGE, version = VERSION,
+      platforms=['all'],
+      license = "GNU LGPL",
+      description = "Use periscope in Nautilus to download subtitles",
+      author = "Patrick Dessalle",
+      author_email = "patrick.dessalle@gmail.com",
+      url = "http://code.google.com/p/periscope/",
+      packages= [ "periscope-nautilus" ],
+      py_modules=["periscope"],
+      scripts = [ "periscope-nautilus.py" ]
+      )
