@@ -80,12 +80,12 @@ class Periscope:
 
 	
 	def deactivatePlugin(self, pluginName):
-		self.pluginNames - pluginName
+		self.pluginNames -= pluginName
 		
 	def activatePlugin(self, pluginName):
 		if pluginName not in self.listExistingPlugins():
 			raise ImportError("No plugin with the name %s exists" %pluginName)
-		self.pluginNames + pluginName
+		self.pluginNames += pluginName
 		
 	def listActivePlugins(self):
 		return self.pluginNames
@@ -190,14 +190,3 @@ class Periscope:
 				# return subtitles[s["lang"]], if it does not exist, set it to [] and return it, then append the subtitle
 				subtitles.setdefault(s["lang"], []).append(s)
 			return subtitles
-
-class Subtitle:
-	''' Attributes and method characterizing a subtitle'''
-	def __init__(self, filename, lang=None, link=None, downloadmethod=None):
-		self.filename = filename
-		self.lang = lang
-		self.link = link
-		self.downloadmethod = downloadmethod
-		
-	def download(self):
-		self.downloadmethod(self.link, self.filename)
