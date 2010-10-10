@@ -21,12 +21,16 @@ import urllib2
 import nautilus
 import os
 import threading
+import gettext
 try:
 	import pynotify
 except ImportError:
 	pass
 
 import periscope
+
+# i18n stuff
+gettext.install('periscope-nautilus')
 
 class DownloadSubtitles(nautilus.MenuProvider):
 	''' This class is to be used in Nautilus with the python-nautilus extension. 
@@ -55,8 +59,8 @@ class DownloadSubtitles(nautilus.MenuProvider):
 			return
 
 		item = nautilus.MenuItem('Nautilus::download_subtitles',
-                                 'Find subtitles for this video',
-                                 'Download subtitles for this video',
+                                 _('Find subtitles for this video'),
+                                 _('Download subtitles for this video'),
                                  gtk.STOCK_FIND_AND_REPLACE)
 		item.connect('activate', self.menu_activate_cb, files)
 		return item,
@@ -69,13 +73,13 @@ class DownloadSubtitles(nautilus.MenuProvider):
 		if pynotify:
 			title = "periscope found %s out of %s subtitles" %(len(found), len(found) + len(notfound))
 			if len(notfound) > 0:
-				msg = "Could not find: \n"
+				msg = _("Could not find: \n")
 				filenames = [os.path.basename(f["filename"]) for f in notfound]
 				msg += "\n".join(filenames)
 				msg += "\n"
 				
 			if len(found) > 0:
-				msg = "Found: \n"
+				msg = _("Found: \n")
 				filenames = [os.path.basename(f["filename"]) for f in found]
 				msg += "\n".join(filenames)
 				
