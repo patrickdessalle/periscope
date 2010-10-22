@@ -31,8 +31,8 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 		#Note: Podnapisi uses two reference for latin serbian and cyrillic serbian (36 and 47). We'll add the 36 manually as cyrillic seems to be more used
 		self.revertlangs["36"] = "sr";
 
-		self.host = "http://simple.podnapisi.net/"
-		self.search = "ppodnapisi/search?"
+		self.host = "http://simple.podnapisi.net"
+		self.search = "/ppodnapisi/search?"
 			
 	def process(self, filepath, langs):
 		''' main method to call on the plugin, pass the filename and the wished 
@@ -90,21 +90,48 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
 		for subs in soup("tr", {"class":"a"}) + soup("tr", {"class": "b"}):
 			releases = subs.find("span", {"class" : "opis"}).find("span")["title"].lower().split(" ")
 			if token.lower() in releases:
-				logging.debug(subs)
 				links = subs.findAll("a")
 				lng = subs.find("a").find("img")["src"].rsplit("/", 1)[1][:-4]
 				if langs and not self.getLG(lng) in langs:
 					continue # The lang of this sub is not wanted => Skip
-				dltag = subs.findAll("a")[1]["href"].split("/")[5]
-				dllink = self.host + "ppodnapisi/download/i/" + dltag + "/k/9c594c649bee3dc4bafbd00ace80907e74df3424"
+				pagelink = subs.findAll("a")[1]["href"]
 				result = {}
 				for rel in releases :
 					if rel == token.lower():
 						result["release"] = rel
-				result["link"] = dllink
-				result["page"] = self.host + "ppodnapisi/podnapis/i/%s/" %dltag
+				result["link"] = None # We'll find the link later using the page
+				# some url are in unicode but urllib.quote() doesn't handle it
+				# well : http://bugs.python.org/issue1712522
+				result["page"] = self.host + urllib.quote(pagelink.encode("utf-8"))
 				result["lang"] = self.getLG(lng)
 				sublinks.append(result)
 
 		logging.debug(sublinks)
 		return sublinks
+
+	def createFile(self, subtitle):
+		'''pass the URL of the sub and the file it matches, will unzip it
+		and return the path to the created file'''
+		subpage = subtitle["page"]
+		
+		# Parse the subpage and extract the link
+		logging.debug('Downloading %s' % subpage)
+		try:
+			socket.setdefaulttimeout(10)
+			page = urllib2.urlopen(subpage)
+		except urllib2.HTTPError as inst:
+			logging.info("Error : %s" %inst)
+			return None
+		except urllib2.URLError as inst:
+			logging.info("TimeOut : %s" %inst)
+			return None
+		content = page.read()
+		# Workaround for the Beautifulsoup 3.1 bug or HTML bugs
+		content = content.replace("scr'+'ipt", "script")
+		content = content.replace("</br", "<br")
+		soup = BeautifulSoup(content)
+		dlimg = soup.find("img", {"title" : "Download"})
+		subtitle["link"] = self.host + dlimg.parent["href"]
+		
+		SubtitleDatabase.SubtitleDB.createFile(self, subtitle)
+		return subtitle["link"]

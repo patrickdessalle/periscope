@@ -84,9 +84,11 @@ class TheSubDB(SubtitleDatabase.SubtitleDB):
             data += f.read(readsize)
         return hashlib.md5(data).hexdigest()
             
-    def createFile(self, suburl, videofilename):
+    def createFile(self, subtitle):
         '''pass the URL of the sub and the file it matches, will unzip it
         and return the path to the created file'''
+        suburl = subtitle["link"]
+        videofilename = subtitle["filename"]
         srtfilename = videofilename.rsplit(".", 1)[0] + '.srt'
         self.downloadFile(suburl, srtfilename)
         return srtfilename

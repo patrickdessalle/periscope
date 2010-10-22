@@ -95,9 +95,11 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
 			fname = self.getFileName(filepath)
 			return self.query(langs=langs, filename=fname)
 		
-	def createFile(self, suburl, videofilename):
+	def createFile(self, subtitle):
 		'''pass the URL of the sub and the file it matches, will unzip it
 		and return the path to the created file'''
+		suburl = subtitle["link"]
+		videofilename = subtitle["filename"]
 		srtbasefilename = videofilename.rsplit(".", 1)[0]
 		self.downloadFile(suburl, srtbasefilename + ".srt.gz")
 		f = gzip.open(srtbasefilename+".srt.gz")

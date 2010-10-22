@@ -111,9 +111,11 @@ class Subtitulos(SubtitleDatabase.SubtitleDB):
 			teams += t.split(sep)
 		return teams
 
-	def createFile(self, suburl, videofilename):
+	def createFile(self, subtitle):
 		'''pass the URL of the sub and the file it matches, will unzip it
 		and return the path to the created file'''
+		suburl = subtitle["link"]
+		videofilename = subtitle["filename"]
 		srtbasefilename = videofilename.rsplit(".", 1)[0]
 		srtfilename = srtbasefilename +".srt"
 		self.downloadFile(suburl, srtfilename)

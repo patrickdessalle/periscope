@@ -60,8 +60,8 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 
 	def __init__(self):
 		super(SubScene, self).__init__(SS_LANGUAGES)
-		#http://subscene.com/s.aspx?q=Dexter.S04E01.HDTV.XviD-NoTV
-		self.host = "http://subscene.com/s.aspx?q="
+		#http://subscene.com/s.aspx?subtitle=Dexter.S04E01.HDTV.XviD-NoTV
+		self.host = "http://subscene.com/s.aspx?subtitle="
 
 	def process(self, filepath, langs):
 		''' main method to call on the plugin, pass the filename and the wished 
@@ -81,12 +81,18 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 			traceback.print_exc()
 			return []
 			
-	def createFile(self, suburl, videofilename):
+	def createFile(self, subtitle):
 		'''pass the URL of the sub and the file it matches, will unzip it
 		and return the path to the created file'''
-		srtbasefilename = videofilename.rsplit(".", 1)[0]
-		archivefilename = srtbasefilename + '.rar'
-		self.downloadFile(suburl, archivefilename)
+		subpage = subtitle["page"]
+		page = urllib2.urlopen(subpage)
+		soup = BeautifulSoup(page)
+		
+		dlhref = soup.find("div", {"class" : "download"}).find("a")["href"]
+		subtitle["link"] =  "http://subscene.com" + dlhref.split('"')[7]
+		format = "zip"
+		archivefilename = subtitle["filename"].rsplit(".", 1)[0] + '.'+ format
+		self.downloadFile(subtitle["link"], archivefilename)
 		subtitlefilename = None
 		
 		if zipfile.is_zipfile(archivefilename):
@@ -112,9 +118,7 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 			try :
 				args = ['unrar', 'lb', archivefilename]
 				output = subprocess.Popen(args, stdout=subprocess.PIPE).communicate()[0]
-				print output
 				for el in output.splitlines():
-					print el
 					extension = el.rsplit(".", 1)[1]
 					if extension in ("srt", "sub"):
 						args = ['unrar', 'e', archivefilename, el, os.path.dirname(archivefilename)]
@@ -134,29 +138,12 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 			logging.info("Unexpected file type (not zip) for %s" %archivefilename)
 			return None
 
-	def downloadFile(self, page_url, filename):
+	def downloadFile(self, url, filename):
 		''' Downloads the given url to the given filename '''
-		# Open the page URL
-		page = urllib2.urlopen(page_url)
-		soup = BeautifulSoup(page)
+		logging.info("Downloading file %s" %url)
+		req = urllib2.Request(url, headers={'Referer' : url, 'User-Agent' : 'Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.3)'})
 		
-		link = soup("a", {'id' : 's_lc_bcr_downloadLink' })[0]
-		url = self.url + soup("form", {'id' : 'aspnetForm'})[0]['action']
-
-		print " "
-		pieces = link['href'].split('"')
-		url = self.url + pieces[-2]
-
-		req = urllib2.Request(url, headers={'Referer' : page_url, 'User-Agent' : 'Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.3)'})
-		postparams = []
-		postparams.append(('__EVENTTARGET', pieces[1]))
-		postparams.append(('__EVENTARGUMENT', ''))
-		postparams.append(('__VIEWSTATE', soup("input", {'id' : '__VIEWSTATE'})[0]['value']))
-		print url
-		print dir(req)
-		print req.get_full_url()
-		print urllib.urlencode(postparams)
-		f = urllib2.urlopen(req, urllib.urlencode(postparams))
+		f = urllib2.urlopen(req, data=urllib.urlencode({'__EVENTTARGET' : 's$lc$bcr$downloadLink', '__EVENTARGUMENT' : '', '__VIEWSTATE' : '/wEPDwUHNzUxOTkwNWRk4wau5efPqhlBJJlOkKKHN8FIS04='}))
 		dump = open(filename, "wb")
 		try:
 			f.read(1000000)
@@ -165,6 +152,8 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 			logging.warn('Incomplete read for %s ... Trying anyway to decompress.' %url)
 		dump.close()
 		f.close()
+		
+		#SubtitleDatabase.SubtitleDB.downloadFile(self, req, filename)
 	
 	def query(self, token, langs=None):
 		''' makes a query on subscene and returns info (link, lang) about found subtitles'''
@@ -180,12 +169,13 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 			lang = self.getLG(lang_span.contents[0].strip())
 			release_span = lang_span.findNext("span")
 			release = release_span.contents[0].strip().split(" (")[0]
-			sub_id = release_span["id"][1:]
+			sub_page = subs["href"]
+			#http://subscene.com//s-dlpath-260016/78348/rar.zipx
 			if release.startswith(token) and (not langs or lang in langs):
 				result = {}
 				result["release"] = release
 				result["lang"] = lang
-				result["page"] = "http://subscene.com" + subs["href"]
-				result["link"] = result['page'] # Not the true URL
+				result["link"] = None
+				result["page"] = "http://subscene.com" + sub_page
 				sublinks.append(result)
 		return sublinks
