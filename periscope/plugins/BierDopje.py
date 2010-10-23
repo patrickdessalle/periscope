@@ -1,0 +1,108 @@
+# -*- coding: utf-8 -*-
+
+#   This file is part of periscope.
+#
+#    periscope is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU Lesser General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    periscope is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Lesser General Public License for more details.
+#
+#    You should have received a copy of the GNU Lesser General Public License
+#    along with periscope; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+import urllib
+import urllib2
+import logging
+from xml.dom import minidom
+from BeautifulSoup import BeautifulSoup
+
+try:
+    import xdg.BaseDirectory as bd
+    is_local = True
+except ImportError:
+    is_local = False
+
+import SubtitleDatabase
+
+class BierDopje(SubtitleDatabase.SubtitleDB):
+    url = "http://bierdopje.com/"
+    site_name = "BierDopje"
+
+    def __init__(self):
+        super(BierDopje, self).__init__(None)
+        #http://api.bierdopje.com/23459DC262C0A742/GetShowByName/30+Rock
+        #http://api.bierdopje.com/23459DC262C0A742/GetAllSubsFor/94/5/1/en (30 rock, season 5, episode 1)
+        
+        key = '23459DC262C0A742'
+        self.api = "http://api.bierdopje.com/%s/" %key
+
+    def process(self, filepath, langs):
+        ''' main method to call on the plugin, pass the filename and the wished 
+        languages and it will query the subtitles source '''
+        fname = self.getFileName(filepath)
+        try:
+            subs = self.query(fname, langs)
+            return subs
+        except Exception, e:
+            logging.error("Error raised by plugin %s: %s" %(self.__class__.__name__, e))
+            traceback.print_exc()
+            return []
+            
+    def createFile(self, subtitle):
+        '''get the URL of the sub, download it and return the path to the created file'''
+        sublink = subtitle["link"]
+        subpath = subtitle["filename"].rsplit(".", 1)[0] + '.srt'
+        self.downloadFile(sublink, subpath)
+        return subpath
+    
+    def query(self, token, langs=None):
+        ''' makes a query and returns info (link, lang) about found subtitles'''
+        guessedData = self.guessFileData(token)
+        if "tvshow" != guessedData['type'] :
+            return []
+        elif langs and not set(langs).intersection((['en', 'nl'])): # lang is given but does not include nl or en
+            return []
+            
+        if not langs :
+            availableLangs = ['nl', 'en']
+        else :
+            availableLangs = list(set(langs).intersection((['en', 'nl'])))
+        logging.debug("possible langs : %s " % availableLangs)
+
+        sublinks = []
+        
+        # Query the show to get the show id
+        getShowId_url = "%sGetShowByName/%s" %(self.api, urllib.quote(guessedData['name']))
+        page = urllib2.urlopen(getShowId_url)
+        dom = minidom.parse(page)
+        if not dom :
+            page.close()
+            return []
+        show_id = dom.getElementsByTagName('showid')[0].firstChild.data
+        page.close()
+        
+        # Query the episode to get the subs
+        for lang in availableLangs :
+            getAllSubs_url = "%sGetAllSubsFor/%s/%s/%s/%s" %(self.api, show_id, guessedData['season'], guessedData['episode'], lang)
+            page = urllib2.urlopen(getAllSubs_url)
+            dom = minidom.parse(page)
+            page.close()
+            for sub in dom.getElementsByTagName('result'):
+                release = sub.getElementsByTagName('filename')[0].firstChild.data
+                dllink = sub.getElementsByTagName('downloadlink')[0].firstChild.data
+                
+                if release == token:
+                    result = {}
+                    result["release"] = release
+                    result["link"] = dllink
+                    result["page"] = dllink
+                    result["lang"] = lang
+                    sublinks.append(result)
+            
+        return sublinks

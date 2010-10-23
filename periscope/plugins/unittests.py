@@ -89,14 +89,14 @@ class SubtitleSourceTestCase(unittest.TestCase):
         results = subdb.query("PrisM-Inception.2010")
         print results
         assert len(results) > 0, "No result could be found for Heroes 3X9 and no languages"
-'''
+
 class SubtitleSourceTestCase2(unittest.TestCase):
     def runTest(self):
         import SubtitleSource
         subdb = SubtitleSource.SubtitleSource()
         results = subdb.query("Transformers.Revenge.of.the.Fallen.TS.XviD-DEViSE", ["en"])
         assert len(results) > 0, "No result could be found for Transformer 2 in English"
-'''
+
 class SubtitleSourceTestCase3(unittest.TestCase):
     def runTest(self):
         import SubtitleSource
@@ -189,6 +189,15 @@ class TvSubtitlesTestCase(unittest.TestCase):
         subs = subdb.query(guessedData['name'], guessedData['season'], guessedData['episode'], guessedData['teams'], ['en'])
         for s in subs:
             print "Sub : %s" %s
-'''        
+'''
+
+class BierDopjeTestCase(unittest.TestCase):
+    def runTest(self):
+        import BierDopje
+        subdb = BierDopje.BierDopje()
+        results = subdb.query("Dexter.S04E01.HDTV.XviD-NoTV")
+        print results
+        assert len(results) > 0, "No result could be found for Dexter.S04E01.HDTV.XviD-NoTV and no languages"
+
 if __name__ == "__main__":
     unittest.main()

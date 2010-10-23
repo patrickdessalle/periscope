@@ -23,6 +23,7 @@ from Subtitulos import Subtitulos
 from Addic7ed import Addic7ed
 from Podnapisi import Podnapisi
 from TheSubDB import TheSubDB
+from BierDopje import BierDopje
 
 
 #from TvSubtitles import TvSubtitles

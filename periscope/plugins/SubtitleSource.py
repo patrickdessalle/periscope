@@ -42,11 +42,11 @@ class SubtitleSource(SubtitleDatabase.SubtitleDB):
 
     def __init__(self):
         super(SubtitleSource, self).__init__(SS_LANGUAGES)
-        config = ConfigParser.SafeConfigParser()
-        config_file = os.path.join(bd.xdg_config_home, "periscope", "config")
-        config.read(config_file)
-        key = config.get("SubtitleSource", "key") # You need to ask for it
-        print key
+        if is_local : 
+            config = ConfigParser.SafeConfigParser()
+            config_file = os.path.join(bd.xdg_config_home, "periscope", "config")
+            config.read(config_file)
+            key = config.get("SubtitleSource", "key") # You need to ask for it
         #http://www.subtitlesource.org/api/KEY/3.0/xmlsearch/Heroes.S03E09.HDTV.XviD-LOL/all/0
         #http://www.subtitlesource.org/api/KEY/3.0/xmlsearch/heroes/swedish/0
 
