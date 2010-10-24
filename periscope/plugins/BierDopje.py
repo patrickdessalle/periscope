@@ -48,7 +48,13 @@ class BierDopje(SubtitleDatabase.SubtitleDB):
         fname = self.getFileName(filepath)
         try:
             subs = self.query(fname, langs)
-            return subs
+            if not subs and fname.rfind(".[") > 0:
+                # Try to remove the [VTV] or [EZTV] at the end of the file
+                teamless_filename = fname[0 : fname.rfind(".[")]
+                subs = self.query(teamless_filename, langs)
+                return subs
+            else:
+                return subs
         except Exception, e:
             logging.error("Error raised by plugin %s: %s" %(self.__class__.__name__, e))
             traceback.print_exc()
@@ -78,14 +84,18 @@ class BierDopje(SubtitleDatabase.SubtitleDB):
         sublinks = []
         
         # Query the show to get the show id
-        getShowId_url = "%sGetShowByName/%s" %(self.api, urllib.quote(guessedData['name']))
-        page = urllib2.urlopen(getShowId_url)
-        dom = minidom.parse(page)
-        if not dom :
+        showName = guessedData['name']
+        if showName.lower() == "the office":
+            show_id = 10358
+        else :
+            getShowId_url = "%sGetShowByName/%s" %(self.api, urllib.quote(showName))
+            page = urllib2.urlopen(getShowId_url)
+            dom = minidom.parse(page)
+            if not dom :
+                page.close()
+                return []
+            show_id = dom.getElementsByTagName('showid')[0].firstChild.data
             page.close()
-            return []
-        show_id = dom.getElementsByTagName('showid')[0].firstChild.data
-        page.close()
         
         # Query the episode to get the subs
         for lang in availableLangs :
