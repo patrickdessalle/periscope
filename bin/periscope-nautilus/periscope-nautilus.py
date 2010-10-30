@@ -80,15 +80,14 @@ class DownloadSubtitles(nautilus.MenuProvider):
 				
 			if len(found) > 0:
 				msg = _("Found: \n")
-				filenames = [os.path.basename(f["filename"]) for f in found]
+				filenames = [os.path.basename(f["filename"]) + " ("+f['lang']+")" for f in found]
 				msg += "\n".join(filenames)
 				
 			n = pynotify.Notification(title, msg, gtk.STOCK_FIND_AND_REPLACE)
 			n.set_timeout(pynotify.EXPIRES_DEFAULT)
 			n.show()
-			print title
 		else:
-			print "Could not show notification window"
+			pass
 			
 		
 class PeriscopeInvoker(threading.Thread):
@@ -108,5 +107,5 @@ class PeriscopeInvoker(threading.Thread):
 			if subtitle:
 				self.found.append(subtitle)
 			else:
-				self.notfound.append({"filename": filename})
+				self.notfound.append({"filename": filename, "lang" : subtitle["lang"]})
 		self.callback(self.found, self.notfound)

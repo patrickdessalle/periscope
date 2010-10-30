@@ -4,6 +4,13 @@ import os
 
 logging.basicConfig(level=logging.DEBUG)
 
+class TVShowRegexTestCase(unittest.TestCase):
+    def runTest(self):
+        import OpenSubtitles
+        subdb = OpenSubtitles.OpenSubtitles()
+        filenames = ('Futurama.S06E05.HDTV.XviD-aAF.avi', 'Parenthood.2010.S01E13.Lost.and.Found.HDTV.XviD-FQM.avi')
+        for filename in filenames:
+            print "%s => %s" %(filename, subdb.guessFileData(filename))
 
 '''
 class RegexTestCase(unittest.TestCase):
@@ -189,7 +196,6 @@ class TvSubtitlesTestCase(unittest.TestCase):
         subs = subdb.query(guessedData['name'], guessedData['season'], guessedData['episode'], guessedData['teams'], ['en'])
         for s in subs:
             print "Sub : %s" %s
-'''
 
 class BierDopjeTestCase(unittest.TestCase):
     def runTest(self):
@@ -198,6 +204,8 @@ class BierDopjeTestCase(unittest.TestCase):
         results = subdb.query("Dexter.S04E01.HDTV.XviD-NoTV")
         print results
         assert len(results) > 0, "No result could be found for Dexter.S04E01.HDTV.XviD-NoTV and no languages"
+'''
+
 
 if __name__ == "__main__":
     unittest.main()
