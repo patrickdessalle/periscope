@@ -123,7 +123,7 @@ class SubtitleDB(object):
 			filename = os.path.basename(filepath)
 		else:
 			filename = filepath
-		if filename.endswith(('.avi', '.wmv', '.mov', '.mp4', '.mpeg', '.mpg')):
+		if filename.endswith(('.avi', '.wmv', '.mov', '.mp4', '.mpeg', '.mpg', '.mkv')):
 			fname = filename.rsplit('.', 1)[0]
 		else:
 			fname = filename

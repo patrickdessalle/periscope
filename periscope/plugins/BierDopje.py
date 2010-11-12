@@ -89,25 +89,29 @@ class BierDopje(SubtitleDatabase.SubtitleDB):
             show_id = 10358
         else :
             getShowId_url = "%sGetShowByName/%s" %(self.api, urllib.quote(showName))
+            logging.debug("Looking for show Id @ %s" % getShowId_url)
             page = urllib2.urlopen(getShowId_url)
             dom = minidom.parse(page)
             if not dom :
                 page.close()
                 return []
             show_id = dom.getElementsByTagName('showid')[0].firstChild.data
+            logging.debug("Found id : %s" %show_id)
             page.close()
         
         # Query the episode to get the subs
         for lang in availableLangs :
             getAllSubs_url = "%sGetAllSubsFor/%s/%s/%s/%s" %(self.api, show_id, guessedData['season'], guessedData['episode'], lang)
+            logging.debug("Looking for subs @ %s" %getAllSubs_url)
             page = urllib2.urlopen(getAllSubs_url)
             dom = minidom.parse(page)
             page.close()
             for sub in dom.getElementsByTagName('result'):
                 release = sub.getElementsByTagName('filename')[0].firstChild.data
                 dllink = sub.getElementsByTagName('downloadlink')[0].firstChild.data
-                
-                if release == token:
+                logging.debug("Release found : %s" % release.lower())
+                logging.debug("Searching for : %s" % token.lower())
+                if release.lower() == token.lower():
                     result = {}
                     result["release"] = release
                     result["link"] = dllink
