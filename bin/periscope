@@ -55,13 +55,13 @@ def main():
     if options.show_active_plugins:
         plugins = periscope_client.listActivePlugins()
         for plugin in plugins:
-            print "%s : %s" %(plugin.site_name, plugin.url)
+            print "%s" %(plugin)
         exit()
         
     if options.show_plugins:
         plugins = periscope_client.listExistingPlugins()
         for plugin in plugins:
-            print "%s : %s" %(plugin.site_name, plugin.url)
+            print "%s" %(plugin)
         exit()
             
     if options.queries: args += options.queries
