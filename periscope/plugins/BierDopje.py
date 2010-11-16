@@ -85,14 +85,14 @@ class BierDopje(SubtitleDatabase.SubtitleDB):
         
         # Query the show to get the show id
         showName = guessedData['name']
-        if showName.lower() == "the office":
+        if showName.lower() == "the office" or showName.lower() == "the office us":
             show_id = 10358
         else :
             getShowId_url = "%sGetShowByName/%s" %(self.api, urllib.quote(showName))
             logging.debug("Looking for show Id @ %s" % getShowId_url)
             page = urllib2.urlopen(getShowId_url)
             dom = minidom.parse(page)
-            if not dom :
+            if not dom or len(dom.getElementsByTagName('showid')) == 0 :
                 page.close()
                 return []
             show_id = dom.getElementsByTagName('showid')[0].firstChild.data
