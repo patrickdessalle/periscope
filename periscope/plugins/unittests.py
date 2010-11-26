@@ -59,7 +59,7 @@ class Addic7edTestCase(unittest.TestCase):
         if guessedData['type'] == 'tvshow':
             subs = subdb.query(guessedData['name'], guessedData['season'], guessedData['episode'], guessedData['teams'])
             print subs
-            
+
 class OpenSubtitlesTestCase(unittest.TestCase):
     def runTest(self):
         import OpenSubtitles
@@ -68,7 +68,17 @@ class OpenSubtitlesTestCase(unittest.TestCase):
         results = subdb.query('Night.Watch.2004.CD1.DVDRiP.XViD-FiCO.avi', moviehash="09a2c497663259cb", bytesize="733589504")
         
         assert len(results) > 0, 'No result found for Night.Watch.2004.CD1.DVDRiP.XViD-FiCO.avi by movie hash'
+'''
+class OpenSubtitlesTestCase(unittest.TestCase):
+    def runTest(self):
+        import OpenSubtitles
+        subdb = OpenSubtitles.OpenSubtitles()
+        # movie hash if for night watch : http://trac.opensubtitles.org/projects/opensubtitles/wiki/XMLRPC
+        results = subdb.process('/burn/The.Office.US.S07E08.Viewing.Party.HDTV.XviD-FQM.[VTV].avi', None)
+        print results
+        assert len(results) > 0, 'No result found for Night.Watch.2004.CD1.DVDRiP.XViD-FiCO.avi by movie hash'
 
+'''
 class OpenSubtitlesTestCaseFileName(unittest.TestCase):
     def runTest(self):
         import OpenSubtitles
@@ -196,16 +206,17 @@ class TvSubtitlesTestCase(unittest.TestCase):
         subs = subdb.query(guessedData['name'], guessedData['season'], guessedData['episode'], guessedData['teams'], ['en'])
         for s in subs:
             print "Sub : %s" %s
-'''
+
 class BierDopjeTestCase(unittest.TestCase):
     def runTest(self):
         import BierDopje
         subdb = BierDopje.BierDopje()
         #results = subdb.query("Dexter.S04E01.HDTV.XviD-NoTV")
-        results = subdb.query("the.walking.dead.s01e02.720p.hdtv.x264-ctu")
+        #results = subdb.query("the.walking.dead.s01e02.720p.hdtv.x264-ctu")
+        results = subdb.query("The.Office.US.S07E08.Viewing.Party.HDTV.XviD-FQM.[VTV]")
         print results
         assert len(results) > 0, "No result could be found for Dexter.S04E01.HDTV.XviD-NoTV and no languages"
-
+'''
 
 
 if __name__ == "__main__":

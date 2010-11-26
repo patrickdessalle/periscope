@@ -28,7 +28,7 @@ except ImportError:
 import SubtitleDatabase
 
 SS_LANGUAGES = {"en": "English",
-                "se": "Swedish",
+                "sv": "Swedish",
                 "da": "Danish",
                 "fi":"Finnish",
                 "no": "Norwegian",
