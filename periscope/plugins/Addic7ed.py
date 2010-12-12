@@ -45,7 +45,9 @@ LANGUAGES = {u"English" : "en",
 			 u"Swedish" : "se",
 			 u"Czech" : "cs",
 			 u"Dutch" : "nl",
-			 u"Hungarian" : "hu"}
+			 u"Hungarian" : "hu",
+			 u"Norwegian" : "no",
+			 u"Polish" : "pl"}
 
 class Addic7ed(SubtitleDatabase.SubtitleDB):
 	url = "http://www.addic7ed.com"
@@ -105,9 +107,8 @@ class Addic7ed(SubtitleDatabase.SubtitleDB):
 			'''logging.debug("Team from website: %s" %subteams)
 			logging.debug("Team from file: %s" %teams)'''
 			#logging.debug("match ? %s" %subteams.issubset(teams))
-			
 			langs_html = subs.findNext("td", {"class" : "language"})
-			lang = self.getLG(langs_html.string.strip())
+			lang = self.getLG(langs_html.contents[0].strip().replace('&nbsp;', ''))
 			#logging.debug("Language : %s - lang : %s" %(langs_html, lang))
 			
 			statusTD = langs_html.findNext("td")
