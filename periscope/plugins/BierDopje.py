@@ -87,6 +87,20 @@ class BierDopje(SubtitleDatabase.SubtitleDB):
         showName = guessedData['name']
         if showName.lower() == "the office" or showName.lower() == "the office us":
             show_id = 10358
+        elif showName.lower() == "greys anatomy":
+            show_id = 3733
+        elif showName.lower() =="sanctuary us":
+            show_id = 7904
+        elif showName.lower() == "human target 2010":
+            show_id=12986
+        elif showName.lower() == 'csi miami':
+           show_id=2187
+        elif showName.lower() == "castle 2009":
+           show_id=12708
+        elif showName.lower() == "chase 2010":
+           show_id=14228
+        elif showName.lower() == "the defenders 2010":
+           show_id=14225
         else :
             getShowId_url = "%sGetShowByName/%s" %(self.api, urllib.quote(showName))
             logging.debug("Looking for show Id @ %s" % getShowId_url)
