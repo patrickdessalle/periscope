@@ -122,6 +122,8 @@ class BierDopje(SubtitleDatabase.SubtitleDB):
             page.close()
             for sub in dom.getElementsByTagName('result'):
                 release = sub.getElementsByTagName('filename')[0].firstChild.data
+                if release.endswith(".srt"):
+                    release = release[:-4]
                 dllink = sub.getElementsByTagName('downloadlink')[0].firstChild.data
                 logging.debug("Release found : %s" % release.lower())
                 logging.debug("Searching for : %s" % token.lower())
