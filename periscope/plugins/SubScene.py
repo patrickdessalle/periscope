@@ -53,7 +53,8 @@ SS_LANGUAGES = {"en": "English",
 				"pl" : "Polish",
 				"ko" : "Korean",
 				"hu" : "Hungarian",
-				"ku" : "Kurdish"}
+				"ku" : "Kurdish",
+				"et" : "Estonian"}
 
 class SubScene(SubtitleDatabase.SubtitleDB):
 	url = "http://subscene.com/"
