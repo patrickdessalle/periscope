@@ -116,7 +116,10 @@ class Addic7ed(SubtitleDatabase.SubtitleDB):
 			statusTD = langs_html.findNext("td")
 			status = statusTD.find("strong").string.strip()
 
-			link = "%s%s"%(self.host,statusTD.findNext("td").find("a")["href"])
+			# take the last one (most updated if it exists)
+			links = statusTD.findNext("td").findAll("a")
+			link = "%s%s"%(self.host,links[len(links)-1]["href"])
+			
 			#logging.debug("%s - match : %s - lang : %s" %(status == "Completed", subteams.issubset(teams), (not langs or lang in langs)))
 			if status == "Completed" and subteams.issubset(teams) and (not langs or lang in langs) :
 				result = {}
