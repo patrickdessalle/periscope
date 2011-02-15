@@ -107,5 +107,5 @@ class PeriscopeInvoker(threading.Thread):
 			if subtitle:
 				self.found.append(subtitle)
 			else:
-				self.notfound.append({"filename": filename, "lang" : subtitle["lang"]})
+				self.notfound.append({"filename": filename })
 		self.callback(self.found, self.notfound)
