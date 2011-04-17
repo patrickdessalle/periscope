@@ -19,8 +19,16 @@
 import urllib
 import urllib2
 import logging
+import os
+import pickle
+import traceback
 from xml.dom import minidom
-from BeautifulSoup import BeautifulSoup
+
+try:
+    import xdg.BaseDirectory as bd
+    is_local = True
+except ImportError:
+    is_local = False
 
 try:
     import xdg.BaseDirectory as bd
@@ -52,8 +60,17 @@ class BierDopje(SubtitleDatabase.SubtitleDB):
         #http://api.bierdopje.com/23459DC262C0A742/GetShowByName/30+Rock
         #http://api.bierdopje.com/23459DC262C0A742/GetAllSubsFor/94/5/1/en (30 rock, season 5, episode 1)
         
-        key = '23459DC262C0A742'
+        key = '112C8204D6754A2A'
         self.api = "http://api.bierdopje.com/%s/" %key
+        self.showid_cache = os.path.join(bd.xdg_config_home, "periscope", "bierdopje_showid.cache")
+        if not os.path.exists(self.showid_cache):
+            f = open(self.showid_cache, 'w')
+            pickle.dump({}, f)
+            f.close()
+        f = open(self.showid_cache, 'r')
+        self.showids = pickle.load(f)
+        f.close()
+        logging.debug("Cache of showids : %s" % self.showids)
 
     def process(self, filepath, langs):
         ''' main method to call on the plugin, pass the filename and the wished 
@@ -97,10 +114,11 @@ class BierDopje(SubtitleDatabase.SubtitleDB):
         sublinks = []
         
         # Query the show to get the show id
-        showName = guessedData['name']
-        if exceptions.has_key(showName.lower()):
-            show_id = exceptions.get(showName.lower())
-            logging.debug('%s is an exception, using hard coded show id %s' % (showName.lower(), show_id))
+        showName = guessedData['name'].lower()
+        if exceptions.has_key(showName):
+            show_id = exceptions.get(showName)
+        elif self.showids.has_key(showName):
+            show_id = self.showids.get(showName)
         else :
             getShowId_url = "%sGetShowByName/%s" %(self.api, urllib.quote(showName))
             logging.debug("Looking for show Id @ %s" % getShowId_url)
@@ -110,7 +128,10 @@ class BierDopje(SubtitleDatabase.SubtitleDB):
                 page.close()
                 return []
             show_id = dom.getElementsByTagName('showid')[0].firstChild.data
-            logging.debug("Found id : %s" %show_id)
+            self.showids[showName] = show_id
+            f = open(self.showid_cache, 'w')
+            pickle.dump(self.showids, f)
+            f.close()
             page.close()
         
         # Query the episode to get the subs
