@@ -30,12 +30,6 @@ try:
 except ImportError:
     is_local = False
 
-try:
-    import xdg.BaseDirectory as bd
-    is_local = True
-except ImportError:
-    is_local = False
-
 import SubtitleDatabase
 
 exceptions = {
