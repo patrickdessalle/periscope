@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #   This file is part of periscope.
+#   Copyright (c) 2008-2011 Patrick Dessalle <patrick@dessalle.be>
 #
 #    periscope is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU Lesser General Public License as published by
@@ -21,16 +22,13 @@ import urllib2
 import logging
 import os
 import pickle
-import traceback
 from xml.dom import minidom
-
-try:
-    import xdg.BaseDirectory as bd
-    is_local = True
-except ImportError:
-    is_local = False
+import ConfigParser
 
 import SubtitleDatabase
+import version
+
+log = logging.getLogger(__name__)
 
 exceptions = {
     'the office' : 10358,
@@ -49,22 +47,26 @@ class BierDopje(SubtitleDatabase.SubtitleDB):
     url = "http://bierdopje.com/"
     site_name = "BierDopje"
 
-    def __init__(self):
+    def __init__(self, config, cache_folder_path):
         super(BierDopje, self).__init__(None)
         #http://api.bierdopje.com/23459DC262C0A742/GetShowByName/30+Rock
         #http://api.bierdopje.com/23459DC262C0A742/GetAllSubsFor/94/5/1/en (30 rock, season 5, episode 1)
-        
-        key = '112C8204D6754A2A'
-        self.api = "http://api.bierdopje.com/%s/" %key
-        self.showid_cache = os.path.join(bd.xdg_config_home, "periscope", "bierdopje_showid.cache")
-        if not os.path.exists(self.showid_cache):
-            f = open(self.showid_cache, 'w')
-            pickle.dump({}, f)
+        self.api = None
+        try:
+            key = config.get("BierDopje", "key") # You need to ask for it
+            self.api = "http://api.bierdopje.com/%s/" %key
+        except ConfigParser.NoSectionError:
+            return
+        self.headers = {'User-Agent' : 'periscope/%s' % version.VERSION}
+        self.cache_path = os.path.join(cache_folder_path, "bierdopje.cache")
+        if not os.path.exists(self.cache_path):
+            log.info("Creating cache file %s" % self.cache_path)
+            f = open(self.cache_path, 'w')
+            pickle.dump({'showids' : {}}, f)
             f.close()
-        f = open(self.showid_cache, 'r')
-        self.showids = pickle.load(f)
+        f = open(self.cache_path, 'r')
+        self.cache = pickle.load(f)
         f.close()
-        logging.debug("Cache of showids : %s" % self.showids)
 
     def process(self, filepath, langs):
         ''' main method to call on the plugin, pass the filename and the wished 
@@ -80,8 +82,7 @@ class BierDopje(SubtitleDatabase.SubtitleDB):
             else:
                 return subs
         except Exception, e:
-            logging.error("Error raised by plugin %s: %s" %(self.__class__.__name__, e))
-            traceback.print_exc()
+            log.exception("Error raised by plugin")
             return []
             
     def createFile(self, subtitle):
@@ -93,6 +94,10 @@ class BierDopje(SubtitleDatabase.SubtitleDB):
     
     def query(self, token, langs=None):
         ''' makes a query and returns info (link, lang) about found subtitles'''
+        if not self.api:
+            log.error("BierDopje requires an API key. Ask a personnal on on http://www.bierdopje.com/forum")
+            return []
+            
         guessedData = self.guessFileData(token)
         if "tvshow" != guessedData['type'] :
             return []
@@ -103,7 +108,7 @@ class BierDopje(SubtitleDatabase.SubtitleDB):
             availableLangs = ['nl', 'en']
         else :
             availableLangs = list(set(langs).intersection((['en', 'nl'])))
-        logging.debug("possible langs : %s " % availableLangs)
+        log.debug("possible langs : %s " % availableLangs)
 
         sublinks = []
         
@@ -111,28 +116,31 @@ class BierDopje(SubtitleDatabase.SubtitleDB):
         showName = guessedData['name'].lower()
         if exceptions.has_key(showName):
             show_id = exceptions.get(showName)
-        elif self.showids.has_key(showName):
-            show_id = self.showids.get(showName)
+        elif self.cache['showids'].has_key(showName):
+            show_id = self.cache['showids'].get(showName)
         else :
             getShowId_url = "%sGetShowByName/%s" %(self.api, urllib.quote(showName))
-            logging.debug("Looking for show Id @ %s" % getShowId_url)
-            page = urllib2.urlopen(getShowId_url)
+            log.debug("Looking for show Id @ %s" % getShowId_url)
+            
+            req = urllib2.Request(getShowId_url, headers = self.headers )
+            page = urllib2.urlopen(req)
             dom = minidom.parse(page)
             if not dom or len(dom.getElementsByTagName('showid')) == 0 :
                 page.close()
                 return []
             show_id = dom.getElementsByTagName('showid')[0].firstChild.data
-            self.showids[showName] = show_id
-            f = open(self.showid_cache, 'w')
-            pickle.dump(self.showids, f)
+            self.cache['showids'][showName] = show_id
+            f = open(self.cache_path, 'w')
+            pickle.dump(self.cache, f)
             f.close()
             page.close()
         
         # Query the episode to get the subs
         for lang in availableLangs :
             getAllSubs_url = "%sGetAllSubsFor/%s/%s/%s/%s" %(self.api, show_id, guessedData['season'], guessedData['episode'], lang)
-            logging.debug("Looking for subs @ %s" %getAllSubs_url)
-            page = urllib2.urlopen(getAllSubs_url)
+            log.debug("Looking for subs @ %s" %getAllSubs_url)
+            req = urllib2.Request(getAllSubs_url, headers = self.headers )
+            page = urllib2.urlopen(req)
             dom = minidom.parse(page)
             page.close()
             for sub in dom.getElementsByTagName('result'):
@@ -140,8 +148,8 @@ class BierDopje(SubtitleDatabase.SubtitleDB):
                 if release.endswith(".srt"):
                     release = release[:-4]
                 dllink = sub.getElementsByTagName('downloadlink')[0].firstChild.data
-                logging.debug("Release found : %s" % release.lower())
-                logging.debug("Searching for : %s" % token.lower())
+                log.debug("Release found : %s" % release.lower())
+                log.debug("Searching for : %s" % token.lower())
                 if release.lower() == token.lower():
                     result = {}
                     result["release"] = release

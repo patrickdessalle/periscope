@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #   This file is part of periscope.
+#   Copyright (c) 2008-2011 Patrick Dessalle <patrick@dessalle.be>
 #
 #    periscope is free software; you can redistribute it and/or
 #    modify it under the terms of the GNU General Public
@@ -23,6 +24,8 @@ from optparse import OptionParser
 import logging
 import periscope
 
+log = logging.getLogger(__name__)
+
 SUPPORTED_FORMATS = 'video/x-msvideo', 'video/quicktime', 'video/x-matroska', 'video/mp4'
 
 def main():
@@ -32,17 +35,16 @@ def main():
     parser.add_option("-l", "--language", action="append", dest="langs", help="wanted language (ISO 639-1 two chars) for the subtitles (fr, en, ja, ...). If none is specified will download a subtitle in any language. This option can be used multiple times like %prog -l fr -l en file1 will try to download in french and then in english if no french subtitles are found.")
     parser.add_option("-f", "--force", action="store_true", dest="force_download", help="force download of a subtitle even there is already one present")
     parser.add_option("-q", "--query", action="append", dest="queries", help="query to send to the subtitles website")
+    parser.add_option("--cache-folder", action="store", type="string", dest="cache_folder", help="location of the periscope cache/config folder (default is ~/.config/periscope)")
     parser.add_option("--list-plugins", action="store_true", dest="show_plugins", help="list all plugins supported by periscope")
     parser.add_option("--list-active-plugins", action="store_true", dest="show_active_plugins", help="list all plugins used to search subtitles (a subset of all the supported plugins)")
     parser.add_option("--quiet", action="store_true", dest="quiet", help="run in quiet mode (only show warn and error messages)")
     parser.add_option("--debug", action="store_true", dest="debug", help="set the logging level to debug")
     (options, args) = parser.parse_args()
-
-    if not args and not options:
+    
+    if not args:
         print parser.print_help()
         exit()
-    
-    periscope_client = periscope.Periscope()
 
     # process args
     if options.debug :
@@ -52,13 +54,30 @@ def main():
     else :
         logging.basicConfig(level=logging.INFO)
         
+
+    if not options.cache_folder:
+        try:
+            import xdg.BaseDirectory as bd
+            options.cache_folder = os.path.join(bd.xdg_config_home, "periscope")
+        except:
+            home = os.path.expanduser("~")
+            if home == "~":
+                log.error("Could not generate a cache folder at the home location using XDG (freedesktop). You must specify a --cache-config folder where the cache and config will be located (always use the same folder).")
+                exit()
+            options.cache_folder = os.path.join(home, ".config", "periscope")
+
+    
+    periscope_client = periscope.Periscope(options.cache_folder)
+        
     if options.show_active_plugins:
+        print "Active plugins: "
         plugins = periscope_client.listActivePlugins()
         for plugin in plugins:
             print "%s" %(plugin)
         exit()
         
     if options.show_plugins:
+        print "All plugins: "
         plugins = periscope_client.listExistingPlugins()
         for plugin in plugins:
             print "%s" %(plugin)
@@ -72,7 +91,7 @@ def main():
     subs = []
     for arg in videos:
         if not options.langs: #Look into the config
-            logging.info("No lang given, looking into config file")
+            log.info("No lang given, looking into config file")
             langs = periscope_client.preferedLanguages
         else:
             langs = options.langs
@@ -80,11 +99,11 @@ def main():
         if sub:
             subs.append(sub)
     
-    logging.warn("*"*50)
-    logging.warn("Downloaded %s subtitles" %len(subs))
+    log.info("*"*50)
+    log.info("Downloaded %s subtitles" %len(subs))
     for s in subs:
-        logging.warn(s['lang'] + " - " + s['subtitlepath'])
-    logging.warn("*"*50)
+        log.info(s['lang'] + " - " + s['subtitlepath'])
+    log.info("*"*50)
     if len(subs) == 0:
         exit(1)
 
@@ -106,9 +125,9 @@ def recursive_search(entry, options):
             if options.force_download or not (os.path.exists(basepath+'.srt') or os.path.exists(basepath + '.sub')):
                 files.append(os.path.normpath(entry))
             else:
-                logging.info("Skipping file %s as it already has a subtitle. Use the --force option to force the download" % entry)
+                log.info("Skipping file %s as it already has a subtitle. Use the --force option to force the download" % entry)
         else :
-            logging.info("%s mimetype is '%s' which is not a supported video format (%s)" %(entry, mimetype, SUPPORTED_FORMATS))
+            log.info("%s mimetype is '%s' which is not a supported video format (%s)" %(entry, mimetype, SUPPORTED_FORMATS))
     return files
     
 if __name__ == "__main__":

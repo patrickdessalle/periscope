@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #   This file is part of periscope.
+#   Copyright (c) 2008-2011 Patrick Dessalle <patrick@dessalle.be>
 #
 #    periscope is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -17,14 +18,20 @@
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from OpenSubtitles import OpenSubtitles
-#from SubtitleSource import SubtitleSource
-#from SubScene import SubScene
 from Subtitulos import Subtitulos
-from Addic7ed import Addic7ed
 from Podnapisi import Podnapisi
 from TheSubDB import TheSubDB
 from BierDopje import BierDopje
+from SubsWiki import SubsWiki
 
+#from SubtitleSource import SubtitleSource # require a key in the config file
 
+# Not working anymore (download fails)
+#from SubScene import SubScene
+
+# Don't want to be included
+#from Addic7ed import Addic7ed
 #from TvSubtitles import TvSubtitles
+
+# API not working
 #from Podnapisi2 import Podnapisi

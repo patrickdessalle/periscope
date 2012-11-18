@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #   This file is part of periscope.
+#   Copyright (c) 2008-2011 Patrick Dessalle <patrick@dessalle.be>
 #
 #    periscope is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU Lesser General Public License as published by
@@ -55,7 +56,7 @@ class Addic7ed(SubtitleDatabase.SubtitleDB):
 	url = "http://www.addic7ed.com"
 	site_name = "Addic7ed"
 
-	def __init__(self):
+	def __init__(self, config, cache_folder_path):
 		super(Addic7ed, self).__init__(langs=None,revertlangs=LANGUAGES)
 		#http://www.addic7ed.com/serie/Smallville/9/11/Absolute_Justice
 		self.host = "http://www.addic7ed.com"

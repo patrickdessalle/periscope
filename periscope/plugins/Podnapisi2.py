@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #   This file is part of periscope.
+#   Copyright (c) 2008-2011 Patrick Dessalle <patrick@dessalle.be>
 #
 #    periscope is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU Lesser General Public License as published by
@@ -26,51 +27,12 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
     url = "http://www.podnapisi.net/"
     site_name = "Podnapisi"
 
-    def __init__(self):
+    def __init__(self, config, cache_folder_path):
         super(Podnapisi, self).__init__({"sl" : "1", "en": "2", "no" : "3", "ko" :"4", "de" : "5", "is" : "6", "cs" : "7", "fr" : "8", "it" : "9", "bs" : "10", "ja" : "11", "ar" : "12", "ro" : "13", "es-ar" : "14", "hu" : "15", "el" : "16", "zh" : "17", "lt" : "19", "et" : "20", "lv" : "21", "he" : "22", "nl" : "23", "da" : "24", "se" : "25", "pl" : "26", "ru" : "27", "es" : "28", "sq" : "29", "tr" : "30", "fi" : "31", "pt": "32", "bg" : "33", "mk" : "35", "sk" : "37", "hr" : "38", "zh" : "40", "hi": "42", "th" : "44", "uk": "46", "sr": "47", "pt-br" : "48", "ga": "49", "be": "50", "vi": "51", "fa": "52", "ca": "53", "id": "54"})
         
         #Note: Podnapisi uses two reference for latin serbian and cyrillic serbian (36 and 47). We'll add the 36 manually as cyrillic seems to be more used
         self.revertlangs["36"] = "sr";
         self.server_url = 'http://ssp.podnapisi.net:8000'
-
-    def hashFile(self, name):
-        '''
-        Calculates the Hash à-la Media Player Classic as it is the hash used by OpenSubtitles.
-        By the way, this is not a very robust hash code.
-        ''' 
-        longlongformat = '<LL'  # signed long, unsigned long 
-        bytesize = struct.calcsize(longlongformat)
-        print "bytesize %s" %bytesize
-
-        f = open(name, "rb")
-        filesize = os.path.getsize(name) 
-        hash = filesize 
-        print hash
-
-        if filesize < 2**16: 
-            logging.error("File %s is too small (SizeError < 2**16)"%name)
-            return []
-
-        for x in range(65536/bytesize): 
-            buffer = f.read(bytesize) 
-            (l2, l1)= struct.unpack(longlongformat, buffer) 
-            l_value = (long(l1) << 32) | long(l2) 
-            hash += l_value 
-            hash = hash & 0xFFFFFFFFFFFFFFFF #to remain as 64bit number  
-        print hash
-
-        f.seek(max(0,filesize-65536),0)
-        for x in range(65536/bytesize): 
-            buffer = f.read(bytesize) 
-            (l2, l1) = struct.unpack(longlongformat, buffer) 
-            l_value = (long(l1) << 32) | long(l2) 
-            hash += l_value 
-            hash = hash & 0xFFFFFFFFFFFFFFFF  
-        print hash
-
-        f.close() 
-        returnedhash =  "%016x" % hash 
-        return returnedhash
 
 
 

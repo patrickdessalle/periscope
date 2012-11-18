@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #   This file is part of periscope.
+#   Copyright (c) 2008-2011 Patrick Dessalle <patrick@dessalle.be>
 #
 #    periscope is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU Lesser General Public License as published by
@@ -60,7 +61,7 @@ class SubScene(SubtitleDatabase.SubtitleDB):
 	url = "http://subscene.com/"
 	site_name = "SubScene"
 
-	def __init__(self):
+	def __init__(self, config, cache_folder_path):
 		super(SubScene, self).__init__(SS_LANGUAGES)
 		#http://subscene.com/s.aspx?subtitle=Dexter.S04E01.HDTV.XviD-NoTV
 		self.host = "http://subscene.com/s.aspx?subtitle="

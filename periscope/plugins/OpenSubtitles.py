@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #   This file is part of periscope.
+#   Copyright (c) 2008-2011 Patrick Dessalle <patrick@dessalle.be>
 #
 #    periscope is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU Lesser General Public License as published by
@@ -20,6 +21,8 @@ import os, struct, xmlrpclib, commands, gzip, traceback, logging
 import socket # For timeout purposes
 
 import SubtitleDatabase
+
+log = logging.getLogger(__name__)
 
 OS_LANGS ={ "en": "eng", 
             "fr" : "fre", 
@@ -78,7 +81,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
     url = "http://www.opensubtitles.org/"
     site_name = "OpenSubtitles"
     
-    def __init__(self):
+    def __init__(self, config, cache_folder_path):
         super(OpenSubtitles, self).__init__(OS_LANGS)
         self.server_url = 'http://api.opensubtitles.org/xml-rpc'
         self.revertlangs = dict(map(lambda item: (item[1],item[0]), self.langs.items()))
@@ -88,6 +91,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
         languages and it will query OpenSubtitles.org '''
         if os.path.isfile(filepath):
             filehash = self.hashFile(filepath)
+            log.debug(filehash)
             size = os.path.getsize(filepath)
             fname = self.getFileName(filepath)
             return self.query(moviehash=filehash, langs=langs, bytesize=size, filename=fname)
@@ -109,47 +113,11 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
         f.close()
         os.remove(srtbasefilename+".srt.gz")
         return srtbasefilename+".srt"
-        
-
-    def hashFile(self, name):
-        '''
-        Calculates the Hash à-la Media Player Classic as it is the hash used by OpenSubtitles.
-        By the way, this is not a very robust hash code.
-        ''' 
-        
-        longlongformat = 'q'  # long long 
-        bytesize = struct.calcsize(longlongformat) 
-            
-        f = open(name, "rb")            
-        filesize = os.path.getsize(name) 
-        hash = filesize 
-            
-        if filesize < 65536 * 2:
-            logging.error("File %s is too small (SizeError < 2**16)"%name)
-            return []
-         
-        for x in range(65536/bytesize): 
-            buffer = f.read(bytesize) 
-            (l_value,)= struct.unpack(longlongformat, buffer)  
-            hash += l_value 
-            hash = hash & 0xFFFFFFFFFFFFFFFF #to remain as 64bit number  
-                 
-
-        f.seek(max(0,filesize-65536),0) 
-        for x in range(65536/bytesize): 
-            buffer = f.read(bytesize) 
-            (l_value,)= struct.unpack(longlongformat, buffer)  
-            hash += l_value 
-            hash = hash & 0xFFFFFFFFFFFFFFFF 
-         
-        f.close() 
-        returnedhash =  "%016x" % hash 
-        return returnedhash
 
     def query(self, filename, imdbID=None, moviehash=None, bytesize=None, langs=None):
         ''' Makes a query on opensubtitles and returns info about found subtitles.
             Note: if using moviehash, bytesize is required.    '''
-            
+        log.debug('query')
         #Prepare the search
         search = {}
         sublinks = []
@@ -158,26 +126,26 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
         if bytesize: search['moviebytesize'] = str(bytesize)
         if langs: search['sublanguageid'] = ",".join([self.getLanguage(lang) for lang in langs])
         if len(search) == 0:
-            logging.debug("No search term, we'll use the filename")
+            log.debug("No search term, we'll use the filename")
             # Let's try to guess what to search:
             guessed_data = self.guessFileData(filename)
             search['query'] = guessed_data['name']
-            logging.debug(search['query'])
+            log.debug(search['query'])
             
         #Login
         self.server = xmlrpclib.Server(self.server_url)
         socket.setdefaulttimeout(10)
         try:
             log_result = self.server.LogIn("","","eng","periscope")
-            logging.debug(log_result)
+            log.debug(log_result)
             token = log_result["token"]
         except Exception:
-            logging.error("Open subtitles could not be contacted for login")
+            log.error("Open subtitles could not be contacted for login")
             token = None
             socket.setdefaulttimeout(None)
             return []
         if not token:
-            logging.error("Open subtitles did not return a token after logging in.")
+            log.error("Open subtitles did not return a token after logging in.")
             return []            
             
         # Search
@@ -188,25 +156,25 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
         try:
             self.server.LogOut(token)
         except:
-            logging.error("Open subtitles could not be contacted for logout")
+            log.error("Open subtitles could not be contacted for logout")
         socket.setdefaulttimeout(None)
         return sublinks
         
         
     def get_results(self, token, search):
-        logging.debug("query: token='%s', search='%s'" % (token, search))
+        log.debug("query: token='%s', search='%s'" % (token, search))
         try:
             if search:
                 results = self.server.SearchSubtitles(token, [search])
         except Exception, e:
-            logging.error("Could not query the server OpenSubtitles")
-            logging.debug(e)
+            log.error("Could not query the server OpenSubtitles")
+            log.debug(e)
             return []
-        logging.debug("Result: %s" %str(results))
+        log.debug("Result: %s" %str(results))
 
         sublinks = []
         if results['data']:
-            logging.debug(results['data'])
+            log.debug(results['data'])
             # OpenSubtitles hash function is not robust ... We'll use the MovieReleaseName to help us select the best candidate
             for r in sorted(results['data'], self.sort_by_moviereleasename):
                 # Only added if the MovieReleaseName matches the file
@@ -219,7 +187,7 @@ class OpenSubtitles(SubtitleDatabase.SubtitleDB):
                     if r["MovieReleaseName"].startswith(self.filename):
                         sublinks.append(result)
                     else:
-                        logging.debug("Removing %s because release '%s' has not right start %s" %(result["release"], r["MovieReleaseName"], self.filename))
+                        log.debug("Removing %s because release '%s' has not right start %s" %(result["release"], r["MovieReleaseName"], self.filename))
                 else :
                     sublinks.append(result)
         return sublinks

@@ -1,3 +1,22 @@
+# -*- coding: utf-8 -*-
+
+#   This file is part of periscope.
+#   Copyright (c) 2008-2011 Patrick Dessalle <patrick@dessalle.be>
+#
+#    periscope is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU Lesser General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    periscope is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Lesser General Public License for more details.
+#
+#    You should have received a copy of the GNU Lesser General Public License
+#    along with periscope; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 import unittest
 import logging
 import os
@@ -35,7 +54,7 @@ class SubtitulosTestCase(unittest.TestCase):
         if guessedData['type'] == 'tvshow':
             subs = subdb.query(guessedData['name'], guessedData['season'], guessedData['episode'], guessedData['teams'])
             print subs
-'''
+
 class Addic7edTestCase(unittest.TestCase):
     def runTest(self):
         import Addic7ed
@@ -52,14 +71,15 @@ class Addic7edTestCase(unittest.TestCase):
     def runTest(self):
         import Addic7ed
         subdb = Addic7ed.Addic7ed()
-        fname = "rubicon.s01e01.repack.hdtv.xvid-fqm.avi"
+        #fname = "rubicon.s01e01.repack.hdtv.xvid-fqm.avi"
+        fname = "24.1x03.2.00.am_3.00.am.ac3.dvdrip_ws_xvid-fov.avi"
         guessedData = subdb.guessFileData(fname)
         print fname
         print guessedData
         if guessedData['type'] == 'tvshow':
             subs = subdb.query(guessedData['name'], guessedData['season'], guessedData['episode'], guessedData['teams'])
             print subs
-'''
+
 class OpenSubtitlesTestCase(unittest.TestCase):
     def runTest(self):
         import OpenSubtitles
@@ -161,12 +181,12 @@ class Podnapisi2TestCase(unittest.TestCase):
         results = subdb.process("/burn/Entourage.S07E01.Stunted.HDTV.XviD-FQM.avi", None)
         print results
         assert len(results) > 5, "Not enough result could be found for The.Office.US.S06E01.HDTV.XviD-2HD and no languages (expected 6)"
-
+'''
 class PodnapisiTestCase(unittest.TestCase):
     def runTest(self):
         import Podnapisi
-        subdb = Podnapisi.Podnapisi()
-        results = subdb.process("Community.S01E01.Pilot.HDTV.XviD-FQM.avi", None)
+        subdb = Podnapisi.Podnapisi(None, None)
+        results = subdb.process("Game.Of.Thrones.S01E10.mkv", None)
         assert len(results) > 5, "Not enough result could be found for Community.S01E01.Pilot.HDTV.XviD-FQM.avi and no languages (expected 6)"
         
         # Download the first
@@ -174,26 +194,21 @@ class PodnapisiTestCase(unittest.TestCase):
         results[0]["filename"] = "/tmp/testPodnapisi.avi"
         subdb.createFile(results[0])
         #TODO Check that /tmp/testPodnapisi.srt exists
-
+'''
 class PodnapisiTestCaseMultiPart(unittest.TestCase):
     def runTest(self):
         import Podnapisi
         subdb = Podnapisi.Podnapisi()
         results = subdb.process("/tmp/Catwoman.CAM-NOX-CD1.avi", None)
-        print results
         assert len(results) > 0
         results = subdb.process("/tmp/Catwoman.CAM-NOX-CD2.avi", None)
-        print results
         assert len(results) > 0
-        
-        Catwoman.CAM-NOX-CD1
 
 class PodnapisiTestCaseTwoSerbian(unittest.TestCase):
     def runTest(self):
         import Podnapisi
         subdb = Podnapisi.Podnapisi()
         results = subdb.process("Twilight[2008]DvDrip-aXXo", None)
-        print results
         assert len(results) > 0, "Not enough result could be found"
 
 class TvSubtitlesTestCase(unittest.TestCase):
@@ -210,13 +225,14 @@ class BierDopjeTestCase(unittest.TestCase):
     def runTest(self):
         import BierDopje
         subdb = BierDopje.BierDopje()
-        #results = subdb.query("Dexter.S04E01.HDTV.XviD-NoTV")
-        #results = subdb.query("the.walking.dead.s01e02.720p.hdtv.x264-ctu")
-        results = subdb.query("The.Office.US.S07E08.Viewing.Party.HDTV.XviD-FQM.[VTV]")
+        video = "The.Office.US.S07E08.Viewing.Party.HDTV.XviD-FQM.[VTV]"
+        #video = "Dexter.S04E01.HDTV.XviD-NoTV"
+        #video = "the.walking.dead.s01e02.720p.hdtv.x264-ctu"
+        video = "the.mentalist.s01e06.720p.hdtv.x264-ctu"
+        results = subdb.query(video)
         print results
-        assert len(results) > 0, "No result could be found for Dexter.S04E01.HDTV.XviD-NoTV and no languages"
+        assert len(results) > 0, "No result could be found for %s and no languages" %( video )
 '''
-
 
 if __name__ == "__main__":
     unittest.main()
