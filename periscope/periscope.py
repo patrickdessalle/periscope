@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #   This file is part of periscope.
+#   Copyright (c) 2008-2011 Patrick Dessalle <patrick@dessalle.be>
 #
 #    periscope is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU Lesser General Public License as published by
@@ -27,6 +28,8 @@ from Queue import Queue
 import traceback
 import ConfigParser
 
+log = logging.getLogger(__name__)
+
 try:
     import xdg.BaseDirectory as bd
     is_local = True
@@ -43,22 +46,22 @@ VERSION = version.VERSION
 class Periscope:
     ''' Main Periscope class'''
     
-    def __init__(self):
-        self.config = ConfigParser.SafeConfigParser({"lang": "", "plugins" : "" })
-        if is_local:
-            self.config_file = os.path.join(bd.xdg_config_home, "periscope", "config")
-            if not os.path.exists(self.config_file):
-                folder = os.path.dirname(self.config_file)
-                if not os.path.exists(folder):
-                    logging.info("Creating folder %s" %folder)
-                    os.mkdir(folder)
-                logging.info("Creating config file")
+    def __init__(self, cache_folder=None):
+        self.config = ConfigParser.SafeConfigParser({"lang": "", "plugins" : "" })        
+        self.config_file = os.path.join(cache_folder, "config")
+        self.cache_path = cache_folder
+        if not os.path.exists(self.config_file):
+            folder = os.path.dirname(self.config_file)
+            if not os.path.exists(folder):
+                log.info("Creating folder %s" %folder)
+                os.mkdir(folder)
+                log.info("Creating config file")
                 configfile = open(self.config_file, "w")
                 self.config.write(configfile)
                 configfile.close()
-            else:
-                #Load it
-                self.config.read(self.config_file)
+        else:
+            #Load it
+            self.config.read(self.config_file)
 
         self.pluginNames = self.get_preferedPlugins()
         self._preferedLanguages = None
@@ -66,7 +69,7 @@ class Periscope:
     def get_preferedLanguages(self):
         ''' Get the prefered language from the config file '''
         configLang = self.config.get("DEFAULT", "lang")
-        logging.info("lang read from config: " + configLang)
+        log.info("lang read from config: " + configLang)
         if configLang == "":
             try :
                 l = [locale.getdefaultlocale()[0][:2]]
@@ -88,7 +91,7 @@ class Periscope:
         if not configPlugins or configPlugins.strip() == "":
             return self.listExistingPlugins()
         else :
-            logging.info("plugins read from config : " + configPlugins)
+            log.info("plugins read from config : " + configPlugins)
             return map(lambda x : x.strip(), configPlugins.split(","))
             
     def set_preferedPlugins(self, newPlugins):
@@ -128,17 +131,17 @@ class Periscope:
         #if not os.path.isfile(filename):
             #raise InvalidFileException(filename, "does not exist")
     
-        logging.info("Searching subtitles for %s with langs %s" %(filename, langs))
+        log.info("Searching subtitles for %s with langs %s" %(filename, langs))
         subtitles = []
         q = Queue()
         for name in self.pluginNames:
             try :
-                plugin = getattr(plugins, name)()
-                logging.info("Searching on %s " %plugin.__class__.__name__)
+                plugin = getattr(plugins, name)(self.config, self.cache_path)
+                log.info("Searching on %s " %plugin.__class__.__name__)
                 thread = threading.Thread(target=plugin.searchInThread, args=(q, filename, langs))
                 thread.start()
             except ImportError :
-                logging.error("Plugin %s is not a valid plugin name. Skipping it.")        
+                log.error("Plugin %s is not a valid plugin name. Skipping it.")        
 
         # Get data from the queue and wait till we have a result
         for name in self.pluginNames:
@@ -175,8 +178,8 @@ class Periscope:
         ''' Takes a filename and a language and creates ONE subtitle through plugins'''
         subtitles = self.listSubtitles(filename, langs)
         if subtitles:
-            logging.debug("All subtitles: ")
-            logging.debug(subtitles)    
+            log.debug("All subtitles: ")
+            log.debug(subtitles)    
             return self.attemptDownloadSubtitle(subtitles, langs)
         else:
             return None
@@ -185,7 +188,7 @@ class Periscope:
     def attemptDownloadSubtitle(self, subtitles, langs):
         subtitle = self.selectBestSubtitle(subtitles, langs)
         if subtitle:
-            logging.info("Trying to download subtitle: %s" %subtitle['link'])
+            log.info("Trying to download subtitle: %s" %subtitle['link'])
             #Download the subtitle
             try:
                 subpath = subtitle["plugin"].createFile(subtitle)        
@@ -197,12 +200,12 @@ class Periscope:
                     raise Exception("Not downloaded")
             except Exception as inst:
                 # Could not download that subtitle, remove it
-                logging.warn("Subtitle %s could not be downloaded, trying the next on the list" %subtitle['link'])
-                logging.error(inst)
+                log.warn("Subtitle %s could not be downloaded, trying the next on the list" %subtitle['link'])
+                log.error(inst)
                 subtitles.remove(subtitle)
                 return self.attemptDownloadSubtitle(subtitles, langs)
         else :
-            logging.error("No subtitles could be chosen.")
+            log.error("No subtitles could be chosen.")
             return None        
 
     def guessFileData(self, filename):
