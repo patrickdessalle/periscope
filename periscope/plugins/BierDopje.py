@@ -26,7 +26,7 @@ from xml.dom import minidom
 import ConfigParser
 
 import SubtitleDatabase
-import version
+from periscope import version
 
 log = logging.getLogger(__name__)
 
