@@ -23,6 +23,7 @@ from Podnapisi import Podnapisi
 from TheSubDB import TheSubDB
 from BierDopje import BierDopje
 from SubsWiki import SubsWiki
+from LegendasTV import LegendasTV
 
 #from SubtitleSource import SubtitleSource # require a key in the config file
 
