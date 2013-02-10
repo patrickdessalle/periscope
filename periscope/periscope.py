@@ -201,7 +201,10 @@ class Periscope:
             except Exception as inst:
                 # Could not download that subtitle, remove it
                 log.warn("Subtitle %s could not be downloaded, trying the next on the list" %subtitle['link'])
-                log.error(inst)
+                etype = sys.exc_info()[0]
+                evalue = sys.exc_info()[1]
+                etb = traceback.extract_tb(sys.exc_info()[2])
+                log.error("Type[%s], Message [%s], Traceback[%s]" % (etype,evalue,etb))
                 subtitles.remove(subtitle)
                 return self.attemptDownloadSubtitle(subtitles, langs)
         else :
