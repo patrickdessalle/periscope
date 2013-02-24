@@ -54,8 +54,15 @@ class BierDopje(SubtitleDatabase.SubtitleDB):
         self.api = None
         try:
             key = config.get("BierDopje", "key") # You need to ask for it
-            self.api = "http://api.bierdopje.com/%s/" %key
+            if key != "":
+                self.api = "http://api.bierdopje.com/%s/" %key
         except ConfigParser.NoSectionError:
+            config.add_section("BierDopje")
+            config.set("BierDopje", "key", "")
+            config_file = os.path.join(cache_folder_path, "config")
+            configfile = open(config_file, "w")
+            config.write(configfile)
+            configfile.close()
             return
         self.headers = {'User-Agent' : 'periscope/%s' % version.VERSION}
         self.cache_path = os.path.join(cache_folder_path, "bierdopje.cache")

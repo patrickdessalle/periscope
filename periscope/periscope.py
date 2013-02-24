@@ -74,7 +74,7 @@ class Periscope:
             try :
                 l = [locale.getdefaultlocale()[0][:2]]
             except :
-                return None
+                return "en"
         else:
             return map(lambda x : x.strip(), configLang.split(","))
 
