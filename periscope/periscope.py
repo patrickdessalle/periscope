@@ -72,9 +72,9 @@ class Periscope:
         log.info("lang read from config: " + configLang)
         if configLang == "":
             try :
-                l = [locale.getdefaultlocale()[0][:2]]
+                return [locale.getdefaultlocale()[0][:2]]
             except :
-                return "en"
+                return ["en"]
         else:
             return map(lambda x : x.strip(), configLang.split(","))
 
