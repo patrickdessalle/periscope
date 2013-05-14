@@ -53,10 +53,11 @@ class SubDivX(SubtitleDatabase.SubtitleDB):
         if guessedData['type'] == 'tvshow':
             subs = self.query(guessedData['name'],
                               guessedData['season'],
-                              guessedData['episode'])
+                              guessedData['episode'],
+                              guessedData['teams'])
             return subs
         elif guessedData['type'] == 'movie':
-            subs = self.query(guessedData['name'])
+            subs = self.query(guessedData['name'], extra=guessedData['teams'])
             return subs
         else:
             return []
@@ -71,7 +72,20 @@ class SubDivX(SubtitleDatabase.SubtitleDB):
         link = details.findAll('div')[1].findAll('a')[-1].get('href')
         return link
 
-    def query(self, name, season=None, episode=None):
+    def _get_result_rating(self, result, extra):
+        if extra is None:
+            extra = []
+        description = result.findNext('div', {'id': 'buscador_detalle_sub'}).text
+        description = description.split('<!--')[0].lower()
+        rating = 0
+        for keyword in extra:
+            if not keyword:
+                continue
+            elif keyword in description:
+                rating += 1
+        return rating
+
+    def query(self, name, season=None, episode=None, extra=None):
         '''Query on SubDivX and return found subtitles details.'''
         sublinks = []
 
@@ -97,8 +111,10 @@ class SubDivX(SubtitleDatabase.SubtitleDB):
                 result["lang"] = 'es'
                 result["link"] = self._get_result_link(subs)
                 result["page"] = query_url
+                result["rating"] = self._get_result_rating(subs, extra)
                 sublinks.append(result)
-        return sublinks
+        sorted_links = sorted(sublinks, key=lambda k: k['rating'], reverse=True)
+        return sorted_links
 
     def createFile(self, subtitle):
         '''Download and extract subtitle.
