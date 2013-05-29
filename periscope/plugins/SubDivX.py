@@ -19,6 +19,7 @@
 
 import logging
 import os
+import re
 import subprocess
 import urllib
 import urllib2
@@ -67,10 +68,15 @@ class SubDivX(SubtitleDatabase.SubtitleDB):
         return result.find('a', {'class': 'titulo_menu_izq'}).text
 
     def _get_result_link(self, result):
-        '''Return the download link of the result.'''
-        details = result.findNext('div', {'id': 'buscador_detalle'})
-        link = details.findAll('div')[1].findAll('a')[-1].get('href')
-        return link
+        '''Return the absolute link of the result. (not the downloadble file)'''
+        return result.find('a', {'class': 'titulo_menu_izq'}).get('href')
+
+    def _get_download_link(self, result_url):
+        '''Return the direct link of the subtitle'''
+        content = self.downloadContent(result_url, timeout=5)
+        soup = BeautifulSoup(content)
+        return soup.find('a', {'class': 'detalle_link',
+                               'href': re.compile("bajar")}).get('href')
 
     def _get_result_rating(self, result, extra):
         if extra is None:
@@ -122,8 +128,7 @@ class SubDivX(SubtitleDatabase.SubtitleDB):
         Pass the URL of the sub and the file it matches, will unzip it
         and return the path to the created file.
         '''
-        download_url = subtitle["link"]
-
+        download_url = self._get_download_link(subtitle["link"])
         request = urllib2.Request(download_url)
         request.get_method = lambda: 'HEAD'
         response = urllib2.urlopen(request)
