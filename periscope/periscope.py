@@ -159,7 +159,7 @@ class Periscope:
         return subtitles
     
     
-    def selectBestSubtitle(self, subtitles, langs, interactive=False):
+    def selectBestSubtitle(self, subtitles, langs=["en"], interactive=False):
         '''Searches subtitles from plugins and returns the best subtitles from all candidates'''
         if not subtitles:
             return None
