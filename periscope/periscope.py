@@ -159,34 +159,53 @@ class Periscope:
         return subtitles
     
     
-    def selectBestSubtitle(self, subtitles, langs=None):
+    def selectBestSubtitle(self, subtitles, langs=["en"], interactive=False):
         '''Searches subtitles from plugins and returns the best subtitles from all candidates'''
         if not subtitles:
             return None
-
-        if not langs: # No preferred language => return the first
-                return subtitles[0]
         
         subtitles = self.__orderSubtitles__(subtitles)
-        for l in langs:
-            if subtitles.has_key(l) and len(subtitles[l]):
-                return subtitles[l][0]
+
+        if not interactive:
+            for l in langs:
+                if subtitles.has_key(l) and len(subtitles[l]):
+                    return subtitles[l][0]
+        else:
+            interactive_subtitles = []
+            for l in langs:
+                if subtitles.has_key(l) and len(subtitles[l]):
+                    for sub in subtitles[l]:
+                        interactive_subtitles.append(sub)
+            for i in range(len(interactive_subtitles)):
+                sub = interactive_subtitles[i]
+                print "[%d]: %s" % (i, sub["release"])
+            sub = None
+            while not sub:
+                try:
+                    sub = interactive_subtitles[int(raw_input("Please select a subtitle: "))]
+                    if sub:
+                        return sub
+                except IndexError:
+                    print "Invalid index"
+                except ValueError:
+                    print "Invalid value"
 
         return None #Could not find subtitles
 
-    def downloadSubtitle(self, filename, langs=None):
-        ''' Takes a filename and a language and creates ONE subtitle through plugins'''
+    def downloadSubtitle(self, filename, langs=None, interactive=False):
+        ''' Takes a filename and a language and creates ONE subtitle through plugins if interactive == True asks before downloading'''
         subtitles = self.listSubtitles(filename, langs)
         if subtitles:
             log.debug("All subtitles: ")
             log.debug(subtitles)    
-            return self.attemptDownloadSubtitle(subtitles, langs)
+            return self.attemptDownloadSubtitle(subtitles, langs, interactive)
         else:
             return None
         
         
-    def attemptDownloadSubtitle(self, subtitles, langs):
-        subtitle = self.selectBestSubtitle(subtitles, langs)
+    def attemptDownloadSubtitle(self, subtitles, langs, interactive=False):
+        subtitle = self.selectBestSubtitle(subtitles, langs, interactive)
+
         if subtitle:
             log.info("Trying to download subtitle: %s" %subtitle['link'])
             #Download the subtitle
