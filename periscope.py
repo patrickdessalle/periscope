@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 #   This file is part of periscope.
@@ -18,15 +18,10 @@
 #    along with periscope; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-
 import os
-import shutil
 import mimetypes
 from optparse import OptionParser
 import logging
-
-import sys
-sys.path.insert(0, os.path.dirname(__file__)+"/..")
 import periscope
 
 log = logging.getLogger(__name__)
@@ -39,16 +34,17 @@ def main():
     parser = OptionParser("usage: %prog [options] file1 file2", version = periscope.VERSION)
     parser.add_option("-l", "--language", action="append", dest="langs", help="wanted language (ISO 639-1 two chars) for the subtitles (fr, en, ja, ...). If none is specified will download a subtitle in any language. This option can be used multiple times like %prog -l fr -l en file1 will try to download in french and then in english if no french subtitles are found.")
     parser.add_option("-f", "--force", action="store_true", dest="force_download", help="force download of a subtitle even there is already one present")
-    parser.add_option("-i", "--interactive", action="store_true", dest="interactive", help="ask which subtitle to download")
     parser.add_option("-q", "--query", action="append", dest="queries", help="query to send to the subtitles website")
-    parser.add_option("--lang-in-name", action="store_true", dest='lang_in_name', help="append lang to subtitle filename")
     parser.add_option("--cache-folder", action="store", type="string", dest="cache_folder", help="location of the periscope cache/config folder (default is ~/.config/periscope)")
     parser.add_option("--list-plugins", action="store_true", dest="show_plugins", help="list all plugins supported by periscope")
     parser.add_option("--list-active-plugins", action="store_true", dest="show_active_plugins", help="list all plugins used to search subtitles (a subset of all the supported plugins)")
     parser.add_option("--quiet", action="store_true", dest="quiet", help="run in quiet mode (only show warn and error messages)")
     parser.add_option("--debug", action="store_true", dest="debug", help="set the logging level to debug")
     (options, args) = parser.parse_args()
-
+    
+    if not args:
+        print parser.print_help()
+        exit()
 
     # process args
     if options.debug :
@@ -57,7 +53,7 @@ def main():
         logging.basicConfig(level=logging.WARN)
     else :
         logging.basicConfig(level=logging.INFO)
-
+        
 
     if not options.cache_folder:
         try:
@@ -70,27 +66,23 @@ def main():
                 exit()
             options.cache_folder = os.path.join(home, ".config", "periscope")
 
-
+    
     periscope_client = periscope.Periscope(options.cache_folder)
-
+        
     if options.show_active_plugins:
         print "Active plugins: "
         plugins = periscope_client.listActivePlugins()
         for plugin in plugins:
             print "%s" %(plugin)
         exit()
-
+        
     if options.show_plugins:
         print "All plugins: "
         plugins = periscope_client.listExistingPlugins()
         for plugin in plugins:
             print "%s" %(plugin)
         exit()
-
-    if not args:
-        print parser.print_help()
-        exit()
-
+            
     if options.queries: args += options.queries
     videos = []
     for arg in args:
@@ -103,21 +95,10 @@ def main():
             langs = periscope_client.preferedLanguages
         else:
             langs = options.langs
-        sub = periscope_client.downloadSubtitle(arg, langs, options.interactive)
+        sub = periscope_client.downloadSubtitle(arg, langs)
         if sub:
             subs.append(sub)
-
-    if options.lang_in_name is None:
-        lang_in_name = periscope_client.preferedNaming
-    else:
-        lang_in_name = options.lang_in_name
-
-    if lang_in_name:
-        for s in subs:
-            new_name = "%s.%s%s" % (os.path.splitext(s['subtitlepath'])[0], s['lang'], os.path.splitext(s['subtitlepath'])[1])
-            shutil.move(s['subtitlepath'], new_name)
-            s['subtitlepath'] = new_name
-
+    
     log.info("*"*50)
     log.info("Downloaded %s subtitles" %len(subs))
     for s in subs:
@@ -148,6 +129,6 @@ def recursive_search(entry, options):
         else :
             log.info("%s mimetype is '%s' which is not a supported video format (%s)" %(entry, mimetype, SUPPORTED_FORMATS))
     return files
-
+    
 if __name__ == "__main__":
     main()
