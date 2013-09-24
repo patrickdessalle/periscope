@@ -69,6 +69,7 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
     
     def query(self, token, langs=None):
         ''' makes a query on podnapisi and returns info (link, lang) about found subtitles'''
+        guessedData = self.guessFileData(token)
         sublinks = []
         params = {"sK" : token}
         if langs and len(langs) == 1:
@@ -83,17 +84,14 @@ class Podnapisi(SubtitleDatabase.SubtitleDB):
         content = content.replace("scr'+'ipt", "script")
         soup = BeautifulSoup(content)
         for subs in soup("tr", {"class":"a"}) + soup("tr", {"class": "b"}):
-            releases = subs.find("span", {"class" : "opis"}).find("span")["title"].lower().split(" ")
-            if token.lower() in releases:
+            details = subs.find("span", {"class" : "opis"}).findAll("b")
+            if guessedData["type"] == "tvshow" and guessedData["season"] == int(details[0].text) and guessedData["episode"] == int(details[1].text):
                 links = subs.findAll("a")
                 lng = subs.find("a").find("img")["src"].rsplit("/", 1)[1][:-4]
                 if langs and not self.getLG(lng) in langs:
                     continue # The lang of this sub is not wanted => Skip
                 pagelink = subs.findAll("a")[1]["href"]
                 result = {}
-                for rel in releases :
-                    if rel == token.lower():
-                        result["release"] = rel
                 result["link"] = None # We'll find the link later using the page
                 # some url are in unicode but urllib.quote() doesn't handle it
                 # well : http://bugs.python.org/issue1712522
