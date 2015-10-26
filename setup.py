@@ -1,9 +1,9 @@
 from setuptools import setup
-from periscope import version
 
 PACKAGE = 'periscope'
 
-setup(name = PACKAGE, version = version.VERSION,
+setup(name = PACKAGE,
+      version = 'dev',
       license = "GNU LGPL",
       description = "Python module to download subtitles for a given video file",
       author = "Patrick Dessalle",
