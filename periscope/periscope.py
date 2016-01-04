@@ -37,11 +37,10 @@ except ImportError:
     is_local = False
 
 import plugins
-import version
 import locale
 
 SUPPORTED_FORMATS = 'video/x-msvideo', 'video/quicktime', 'video/x-matroska', 'video/mp4'
-VERSION = version.VERSION
+VERSION = 'dev'
 
 class Periscope:
     ''' Main Periscope class'''
